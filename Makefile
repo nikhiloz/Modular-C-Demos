@@ -1,99 +1,74 @@
-# Compiler and flags
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -O2 -g
-LDFLAGS = -L/usr/local/lib -lm -lpthread
+CC := gcc
+CFLAGS := -Wall -Wextra -std=c99 -O2 -g -Wno-unused-parameter -Wno-unused-variable
+PTHREAD := -pthread
+INCDIR := include
+BINDIR := bin
 
-# Source files and objects
-SOURCES = bit_operations.c c_language_features_demo.c pthread_mutex_demo.c system_command_demo.c combined_hack_demo.c comprehensive_c_demo.c
-OBJECTS = $(SOURCES:.c=.o)
+.PHONY: all clean test help directories
 
-# Target executables
-TARGETS = bit_demo c_features_demo pthread_demo system_demo combined_hack comprehensive_demo
+all: directories $(BINDIR)/01_data_types $(BINDIR)/02_operators $(BINDIR)/03_control_flow $(BINDIR)/04_functions $(BINDIR)/05_arrays $(BINDIR)/06_pointers $(BINDIR)/07_strings $(BINDIR)/08_structures $(BINDIR)/09_memory $(BINDIR)/10_file_io $(BINDIR)/11_preprocessor $(BINDIR)/12_bitwise $(BINDIR)/13_advanced $(BINDIR)/14_concurrency $(BINDIR)/15_system $(BINDIR)/c_demos
+	@echo "Build complete! Demos are in $(BINDIR)/"
+	@ls -la $(BINDIR)/
 
-# Default target
-all: $(TARGETS)
-	@echo "=============================="
-	@echo "   BUILD COMPLETED SUCCESSFULLY"
-	@echo "=============================="
+directories:
+	@mkdir -p $(BINDIR)
 
-# Pattern rule for object files
-%.o: %.c
-	@echo "Compiling $<..."
-	$(CC) -c -o $@ $< $(CFLAGS)
+$(BINDIR)/c_demos: src/main.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# Bit operations demo
-bit_demo: bit_operations.o
-	@echo "----Linking bit_demo----"
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+$(BINDIR)/01_data_types: src/01_basics/data_types.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# C language features demo
-c_features_demo: c_language_features_demo.o
-	@echo "----Linking c_features_demo----"
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+$(BINDIR)/02_operators: src/02_operators/operators.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# Pthread mutex demo
-pthread_demo: pthread_mutex_demo.o
-	@echo "----Linking pthread_demo----"
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+$(BINDIR)/03_control_flow: src/03_control_flow/control_flow.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# System command demo
-system_demo: system_command_demo.o
-	@echo "----Linking system_demo----"
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+$(BINDIR)/04_functions: src/04_functions/functions.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# Combined hack demo
-combined_hack: combined_hack_demo.o
-	@echo "----Linking combined_hack----"
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+$(BINDIR)/05_arrays: src/05_arrays/arrays.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# Comprehensive demo combining all 5 files
-comprehensive_demo: comprehensive_c_demo.o
-	@echo "----Linking comprehensive_demo----"
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+$(BINDIR)/06_pointers: src/06_pointers/pointers.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
 
-# Clean build artifacts
+$(BINDIR)/07_strings: src/07_strings/strings.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+$(BINDIR)/08_structures: src/08_structures/structures.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+$(BINDIR)/09_memory: src/09_memory/memory.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+$(BINDIR)/10_file_io: src/10_file_io/file_io.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+$(BINDIR)/11_preprocessor: src/11_preprocessor/preprocessor.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+$(BINDIR)/12_bitwise: src/12_bitwise/bitwise.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+$(BINDIR)/13_advanced: src/13_advanced/advanced.c
+	$(CC) $(CFLAGS) -std=c11 -I$(INCDIR) $< -o $@
+
+$(BINDIR)/14_concurrency: src/14_concurrency/concurrency.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@ $(PTHREAD)
+
+$(BINDIR)/15_system: src/15_system/system.c
+	$(CC) $(CFLAGS) -I$(INCDIR) $< -o $@
+
+test: all
+	@echo "Running all demos..."
+	@for demo in $(BINDIR)/*; do echo "--- $$demo ---"; $$demo 2>&1 | head -50 || true; done
+
 clean:
-	@echo "----Cleaning----"
-	rm -f $(OBJECTS) $(TARGETS)
+	rm -rf $(BINDIR)
 
-# Install target (optional)
-install: $(TARGETS)
-	@echo "----Installing----"
-	cp $(TARGETS) /usr/local/bin/
-
-# Run tests
-test: $(TARGETS)
-	@echo "----Running tests----"
-	./bit_demo
-	@echo "----Running C features demo----"
-	./c_features_demo
-	@echo "----Running pthread demo----"
-	./pthread_demo
-	@echo "----Running system command demo----"
-	./system_demo
-	@echo "----Running combined hack demo----"
-	./combined_hack
-	@echo "----Running comprehensive demo----"
-	./comprehensive_demo
-
-# Show help
 help:
-	@echo "Available targets:"
-	@echo "  all                - Build all targets (default)"
-	@echo "  bit_demo           - Build the bit operations demo"
-	@echo "  c_features_demo    - Build the C language features demo"
-	@echo "  pthread_demo       - Build the pthread mutex demo"
-	@echo "  system_demo        - Build the system command demo"
-	@echo "  combined_hack      - Build the combined hack demonstrations"
-	@echo "  comprehensive_demo - Build the comprehensive demo (all 5 files)"
-	@echo "  clean              - Remove build artifacts"
-	@echo "  install            - Install executables to /usr/local/bin"
-	@echo "  test               - Run all demo programs"
-	@echo "  help               - Show this help message"
-
-# Declare phony targets
-.PHONY: all clean install test help
-
-
-
-
+	@echo "make       - Build all demos"
+	@echo "make test  - Build and run all demos"
+	@echo "make clean - Clean build files"
