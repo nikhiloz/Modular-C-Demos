@@ -37,8 +37,8 @@ make bin/34_libraries
 
 ## Diagrams
 
-- [Concept Diagram](34_libraries_concept.png)
-- [Code Flow Diagram](34_libraries_flow.png)
+- ![Concept Diagram](libraries_concept.png)
+- ![Code Flow Diagram](libraries_flow.png)
 
 ## Try It Yourself
 

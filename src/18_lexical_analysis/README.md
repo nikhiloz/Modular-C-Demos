@@ -36,8 +36,8 @@ make bin/18_lexical_analysis
 ```
 
 ## Diagrams
-- [Concept Diagram](18_lexical_analysis_concept.png)
-- [Code Flow Diagram](18_lexical_analysis_flow.png)
+- ![Concept Diagram](lexical_analysis_concept.png)
+- ![Code Flow Diagram](lexical_analysis_flow.png)
 
 ## Try It Yourself
 ```bash

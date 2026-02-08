@@ -31,8 +31,8 @@ make bin/26_elf_executable
 ```
 
 ## Diagrams
-- [Concept Diagram](26_elf_executable_concept.png)
-- [Code Flow Diagram](26_elf_executable_flow.png)
+- ![Concept Diagram](elf_executable_concept.png)
+- ![Code Flow Diagram](elf_executable_flow.png)
 
 ## Try It Yourself
 ```bash

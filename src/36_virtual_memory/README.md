@@ -41,8 +41,8 @@ make bin/36_virtual_memory
 
 ## Diagrams
 
-- [Concept Diagram](36_virtual_memory_concept.png)
-- [Code Flow Diagram](36_virtual_memory_flow.png)
+- ![Concept Diagram](virtual_memory_concept.png)
+- ![Code Flow Diagram](virtual_memory_flow.png)
 
 ## Try It Yourself
 

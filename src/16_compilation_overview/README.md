@@ -35,8 +35,8 @@ make bin/16_compilation_overview
 ```
 
 ## Diagrams
-- [Concept Diagram](16_compilation_overview_concept.png)
-- [Code Flow Diagram](16_compilation_overview_flow.png)
+- ![Concept Diagram](compilation_overview_concept.png)
+- ![Code Flow Diagram](compilation_overview_flow.png)
 
 ## Try It Yourself
 ```bash

@@ -32,8 +32,8 @@ make bin/31_calling_conventions
 ```
 
 ## Diagrams
-- [Concept Diagram](31_calling_conventions_concept.png)
-- [Code Flow Diagram](31_calling_conventions_flow.png)
+- ![Concept Diagram](calling_conventions_concept.png)
+- ![Code Flow Diagram](calling_conventions_flow.png)
 
 ## Try It Yourself
 ```bash

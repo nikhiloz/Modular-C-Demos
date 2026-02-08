@@ -36,8 +36,8 @@ make bin/24_assembler_elf
 
 ## Diagrams
 
-- [Concept Diagram](24_assembler_elf_concept.png)
-- [Code Flow Diagram](24_assembler_elf_flow.png)
+- ![Concept Diagram](assembler_elf_concept.png)
+- ![Code Flow Diagram](assembler_elf_flow.png)
 
 ## Try It Yourself
 

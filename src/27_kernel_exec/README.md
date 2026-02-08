@@ -31,8 +31,8 @@ make bin/27_kernel_exec
 ```
 
 ## Diagrams
-- [Concept Diagram](27_kernel_exec_concept.png)
-- [Code Flow Diagram](27_kernel_exec_flow.png)
+- ![Concept Diagram](kernel_exec_concept.png)
+- ![Code Flow Diagram](kernel_exec_flow.png)
 
 ## Try It Yourself
 ```bash

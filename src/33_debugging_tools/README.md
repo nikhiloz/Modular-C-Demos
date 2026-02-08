@@ -38,8 +38,8 @@ make bin/33_debugging_tools
 
 ## Diagrams
 
-- [Concept Diagram](33_debugging_tools_concept.png)
-- [Code Flow Diagram](33_debugging_tools_flow.png)
+- ![Concept Diagram](debugging_tools_concept.png)
+- ![Code Flow Diagram](debugging_tools_flow.png)
 
 ## Try It Yourself
 

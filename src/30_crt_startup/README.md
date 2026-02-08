@@ -31,8 +31,8 @@ make bin/30_crt_startup
 ```
 
 ## Diagrams
-- [Concept Diagram](30_crt_startup_concept.png)
-- [Code Flow Diagram](30_crt_startup_flow.png)
+- ![Concept Diagram](crt_startup_concept.png)
+- ![Code Flow Diagram](crt_startup_flow.png)
 
 ## Try It Yourself
 ```bash

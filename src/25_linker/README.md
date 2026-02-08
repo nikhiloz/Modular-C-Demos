@@ -40,8 +40,8 @@ make bin/25_linker
 
 ## Diagrams
 
-- [Concept Diagram](25_linker_concept.png)
-- [Code Flow Diagram](25_linker_flow.png)
+- ![Concept Diagram](linker_concept.png)
+- ![Code Flow Diagram](linker_flow.png)
 
 ## Try It Yourself
 

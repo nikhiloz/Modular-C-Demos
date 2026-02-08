@@ -39,8 +39,8 @@ make bin/35_cross_compilation
 
 ## Diagrams
 
-- [Concept Diagram](35_cross_compilation_concept.png)
-- [Code Flow Diagram](35_cross_compilation_flow.png)
+- ![Concept Diagram](cross_compilation_concept.png)
+- ![Code Flow Diagram](cross_compilation_flow.png)
 
 ## Try It Yourself
 

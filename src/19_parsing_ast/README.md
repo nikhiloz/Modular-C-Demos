@@ -37,8 +37,8 @@ make bin/19_parsing_ast
 ```
 
 ## Diagrams
-- [Concept Diagram](19_parsing_ast_concept.png)
-- [Code Flow Diagram](19_parsing_ast_flow.png)
+- ![Concept Diagram](parsing_ast_concept.png)
+- ![Code Flow Diagram](parsing_ast_flow.png)
 
 ## Try It Yourself
 ```bash

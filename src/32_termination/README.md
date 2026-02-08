@@ -31,8 +31,8 @@ make bin/32_termination
 ```
 
 ## Diagrams
-- [Concept Diagram](32_termination_concept.png)
-- [Code Flow Diagram](32_termination_flow.png)
+- ![Concept Diagram](termination_concept.png)
+- ![Code Flow Diagram](termination_flow.png)
 
 ## Try It Yourself
 ```bash

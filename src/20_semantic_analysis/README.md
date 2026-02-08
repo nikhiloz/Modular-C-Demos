@@ -37,8 +37,8 @@ make bin/20_semantic_analysis
 ```
 
 ## Diagrams
-- [Concept Diagram](20_semantic_analysis_concept.png)
-- [Code Flow Diagram](20_semantic_analysis_flow.png)
+- ![Concept Diagram](semantic_analysis_concept.png)
+- ![Code Flow Diagram](semantic_analysis_flow.png)
 
 ## Try It Yourself
 ```bash

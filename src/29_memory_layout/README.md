@@ -31,8 +31,8 @@ make bin/29_memory_layout
 ```
 
 ## Diagrams
-- [Concept Diagram](29_memory_layout_concept.png)
-- [Code Flow Diagram](29_memory_layout_flow.png)
+- ![Concept Diagram](memory_layout_concept.png)
+- ![Code Flow Diagram](memory_layout_flow.png)
 
 ## Try It Yourself
 ```bash

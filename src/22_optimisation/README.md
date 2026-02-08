@@ -38,8 +38,8 @@ make bin/22_optimisation
 
 ## Diagrams
 
-- [Concept Diagram](22_optimisation_concept.png)
-- [Code Flow Diagram](22_optimisation_flow.png)
+- ![Concept Diagram](optimisation_concept.png)
+- ![Code Flow Diagram](optimisation_flow.png)
 
 ## Try It Yourself
 

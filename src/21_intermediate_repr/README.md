@@ -37,8 +37,8 @@ make bin/21_intermediate_repr
 
 ## Diagrams
 
-- [Concept Diagram](21_intermediate_repr_concept.png)
-- [Code Flow Diagram](21_intermediate_repr_flow.png)
+- ![Concept Diagram](intermediate_repr_concept.png)
+- ![Code Flow Diagram](intermediate_repr_flow.png)
 
 ## Try It Yourself
 

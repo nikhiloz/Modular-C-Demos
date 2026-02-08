@@ -37,8 +37,8 @@ make bin/23_code_generation
 
 ## Diagrams
 
-- [Concept Diagram](23_code_generation_concept.png)
-- [Code Flow Diagram](23_code_generation_flow.png)
+- ![Concept Diagram](code_generation_concept.png)
+- ![Code Flow Diagram](code_generation_flow.png)
 
 ## Try It Yourself
 

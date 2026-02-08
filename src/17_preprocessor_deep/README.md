@@ -38,8 +38,8 @@ make bin/17_preprocessor_deep
 ```
 
 ## Diagrams
-- [Concept Diagram](17_preprocessor_deep_concept.png)
-- [Code Flow Diagram](17_preprocessor_deep_flow.png)
+- ![Concept Diagram](preprocessor_deep_concept.png)
+- ![Code Flow Diagram](preprocessor_deep_flow.png)
 
 ## Try It Yourself
 ```bash

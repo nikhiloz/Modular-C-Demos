@@ -31,8 +31,8 @@ make bin/28_dynamic_linker
 ```
 
 ## Diagrams
-- [Concept Diagram](28_dynamic_linker_concept.png)
-- [Code Flow Diagram](28_dynamic_linker_flow.png)
+- ![Concept Diagram](dynamic_linker_concept.png)
+- ![Code Flow Diagram](dynamic_linker_flow.png)
 
 ## Try It Yourself
 ```bash
