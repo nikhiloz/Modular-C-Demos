@@ -1,0 +1,86 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam packageBorderColor #555555
+skinparam arrowColor #555555
+
+title Modular-C-Demos — Chapter Map (36 Chapters)
+
+package "Part I: C Fundamentals" as P1 #BBDEFB {
+  rectangle "01 Data Types" as c01 #E3F2FD
+  rectangle "02 Operators" as c02 #E3F2FD
+  rectangle "03 Control Flow" as c03 #E3F2FD
+  rectangle "04 Functions" as c04 #E3F2FD
+  rectangle "05 Arrays" as c05 #E3F2FD
+  rectangle "06 Pointers" as c06 #E3F2FD
+  rectangle "07 Strings" as c07 #E3F2FD
+  rectangle "08 Structures" as c08 #E3F2FD
+  rectangle "09 Memory Mgmt" as c09 #E3F2FD
+  rectangle "10 File I/O" as c10 #E3F2FD
+  rectangle "11 Preprocessor" as c11 #E3F2FD
+  rectangle "12 Bitwise" as c12 #E3F2FD
+  rectangle "13 Advanced C" as c13 #E3F2FD
+  rectangle "14 Concurrency" as c14 #E3F2FD
+  rectangle "15 System Prog" as c15 #E3F2FD
+}
+
+package "Part II: How the Compiler Works" as P2 #C8E6C9 {
+  rectangle "16 Compilation\nPipeline" as c16 #E8F5E9
+  rectangle "17 Preprocessor\nDeep Dive" as c17 #E8F5E9
+  rectangle "18 Lexical\nAnalysis" as c18 #E8F5E9
+  rectangle "19 Parsing\n& AST" as c19 #E8F5E9
+  rectangle "20 Semantic\nAnalysis" as c20 #E8F5E9
+  rectangle "21 Intermediate\nRepresentations" as c21 #E8F5E9
+  rectangle "22 Optimisation" as c22 #E8F5E9
+  rectangle "23 Code\nGeneration" as c23 #E8F5E9
+  rectangle "24 Assembler\n& ELF" as c24 #E8F5E9
+  rectangle "25 Linker" as c25 #E8F5E9
+}
+
+package "Part III: Program Loading & Execution" as P3 #FFE0B2 {
+  rectangle "26 ELF\nExecutable" as c26 #FFF3E0
+  rectangle "27 Kernel\nExec" as c27 #FFF3E0
+  rectangle "28 Dynamic\nLinker" as c28 #FFF3E0
+  rectangle "29 Memory\nLayout" as c29 #FFF3E0
+  rectangle "30 CRT\nStartup" as c30 #FFF3E0
+  rectangle "31 Calling\nConventions" as c31 #FFF3E0
+  rectangle "32 Termination" as c32 #FFF3E0
+}
+
+package "Part IV: Practical Depth" as P4 #E1BEE7 {
+  rectangle "33 Debugging\nTools" as c33 #F3E5F5
+  rectangle "34 Libraries" as c34 #F3E5F5
+  rectangle "35 Cross-\nCompilation" as c35 #F3E5F5
+  rectangle "36 Virtual\nMemory" as c36 #F3E5F5
+}
+
+' Key dependency arrows between parts
+c11 -down-> c17 : deepens
+c15 -down-> c16 : prerequisite
+
+c16 -down-> c17
+c17 -right-> c18
+c18 -right-> c19
+c19 -right-> c20
+c20 -down-> c21
+c21 -right-> c22
+c22 -right-> c23
+c23 -down-> c24
+c24 -right-> c25
+
+c25 -down-> c26
+c26 -right-> c27
+c27 -right-> c28
+c28 -down-> c29
+c29 -right-> c30
+c30 -right-> c31
+c31 -down-> c32
+
+c25 -down-> c34 : lib linking
+c24 -down-> c33 : binary tools
+c29 -down-> c36 : memory deep dive
+c16 -down-> c35 : build targets
+
+@enduml

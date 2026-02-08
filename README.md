@@ -2,6 +2,10 @@
 
 A complete, modular demonstration of the C programming language — from fundamentals through compiler internals, program loading, and practical systems depth. 36 self-contained chapters, each with annotated C source code, PlantUML diagrams, and hands-on exercises.
 
+### The Complete Journey: Source Code to Running Process
+
+![Source to Execution](docs/source_to_execution.png)
+
 ## Project Structure
 
 ```
@@ -68,6 +72,12 @@ Each chapter directory contains:
 
 ---
 
+## Learning Path
+
+![Learning Path](docs/learning_path.png)
+
+---
+
 ## Part I — C Fundamentals (Chapters 1–15)
 
 | Ch | Topic | Key Concepts |
@@ -123,6 +133,12 @@ Each chapter directory contains:
 | 34 | Libraries | static (.a), shared (.so), visibility, pkg-config, soname |
 | 35 | Cross-Compilation | toolchain triplets, sysroot, endianness, QEMU |
 | 36 | Virtual Memory | pages, TLB, page faults, COW, mmap/mprotect, swap |
+
+---
+
+## Chapter Dependencies
+
+![Chapter Map](docs/chapter_map.png)
 
 ---
 

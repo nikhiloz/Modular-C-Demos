@@ -1,0 +1,53 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam rectangleBorderColor #555555
+skinparam arrowColor #555555
+
+title From Source Code to Running Process — The Complete Journey
+
+rectangle "**hello.c**\nSource Code" as src #BBDEFB
+
+rectangle "Part II: Compiler Pipeline" as compiler #C8E6C9 {
+  rectangle "**Ch 17: Preprocessor**\nExpand macros and includes\nOutput: .i file" as pp #E8F5E9
+  rectangle "**Ch 18-20: Frontend**\nTokenise, parse AST,\ntype-check\nOutput: validated AST" as fe #E8F5E9
+  rectangle "**Ch 21-22: Middle End**\nGenerate IR (TAC/SSA)\nOptimise passes\nOutput: optimised IR" as me #E8F5E9
+  rectangle "**Ch 23: Backend**\nRegister allocation,\ninstruction selection\nOutput: assembly (.s)" as be #E8F5E9
+  rectangle "**Ch 24: Assembler**\nEncode instructions\nOutput: ELF object (.o)" as asm #E8F5E9
+  rectangle "**Ch 25: Linker**\nResolve symbols, relocate\nMerge sections\nOutput: executable" as ld #E8F5E9
+}
+
+rectangle "Part III: Loading and Execution" as loading #FFE0B2 {
+  rectangle "**Ch 26: ELF Executable**\nProgram headers, segments\nPT_INTERP, PT_LOAD" as elf #FFF3E0
+  rectangle "**Ch 27: Kernel (execve)**\nfork, map segments\nSet up initial stack" as kern #FFF3E0
+  rectangle "**Ch 28: Dynamic Linker**\nld.so resolves libs\nPLT/GOT lazy binding" as dynld #FFF3E0
+  rectangle "**Ch 30: CRT Startup**\n_start, __libc_start_main\n.init_array, atexit" as crt #FFF3E0
+  rectangle "**Ch 29: Memory Layout**\n.text .data .bss\nheap stack mmap" as mem #FFF3E0
+  rectangle "**Ch 31: Calling Conv.**\nSystem V ABI\nRegisters, stack frames" as abi #FFF3E0
+}
+
+rectangle "**main() runs**" as main #A5D6A7
+
+rectangle "**Ch 32: Termination**\nexit, atexit, signals\nkernel cleanup" as term #FFCDD2
+
+src -down-> pp
+pp -down-> fe
+fe -down-> me
+me -down-> be
+be -down-> asm
+asm -down-> ld
+
+ld -down-> elf
+
+elf -down-> kern
+kern -down-> dynld
+dynld -down-> crt
+crt -down-> mem
+mem -down-> abi
+abi -down-> main
+
+main -down-> term
+
+@enduml

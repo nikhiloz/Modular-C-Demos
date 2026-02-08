@@ -1,0 +1,62 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam rectangleBorderColor #555555
+skinparam arrowColor #555555
+
+title Modular-C-Demos — Recommended Learning Path
+
+rectangle "**START HERE**" as start #B2EBF2
+
+rectangle "**Part I: C Fundamentals**\nCh 01-15" as p1 #BBDEFB {
+  rectangle "01 Data Types\n02 Operators\n03 Control Flow" as p1a #E3F2FD
+  rectangle "04 Functions\n05 Arrays\n06 Pointers\n07 Strings" as p1b #E3F2FD
+  rectangle "08 Structures\n09 Memory\n10 File I/O" as p1c #E3F2FD
+  rectangle "11 Preprocessor\n12 Bitwise\n13 Advanced" as p1d #E3F2FD
+  rectangle "14 Concurrency\n15 System" as p1e #E3F2FD
+}
+
+rectangle "Already comfortable\nwith C?" as decision #FFF9C4
+
+rectangle "**Part II: How the Compiler Works**\nCh 16-25" as p2 #C8E6C9 {
+  rectangle "16 Pipeline Overview\n17 Preprocessor Deep\n18 Lexical Analysis" as p2a #E8F5E9
+  rectangle "19 Parsing & AST\n20 Semantic Analysis\n21 Intermediate Repr" as p2b #E8F5E9
+  rectangle "22 Optimisation\n23 Code Generation\n24 Assembler & ELF\n25 Linker" as p2c #E8F5E9
+}
+
+rectangle "**Part III: Program Loading**\nCh 26-32" as p3 #FFE0B2 {
+  rectangle "26 ELF Executable\n27 Kernel Exec\n28 Dynamic Linker" as p3a #FFF3E0
+  rectangle "29 Memory Layout\n30 CRT Startup\n31 Calling Conventions\n32 Termination" as p3b #FFF3E0
+}
+
+rectangle "**Part IV: Practical Depth**\nCh 33-36" as p4 #E1BEE7 {
+  rectangle "33 Debugging Tools\n34 Libraries\n35 Cross-Compilation\n36 Virtual Memory" as p4a #F3E5F5
+}
+
+rectangle "**COMPLETE**\nYou understand C from\nsource code to execution" as finish #A5D6A7
+
+start -down-> decision
+decision -down-> p1a : "New to C"
+decision -down-> p2a : "Yes, skip to Part II"
+
+p1a -down-> p1b
+p1b -down-> p1c
+p1c -down-> p1d
+p1d -down-> p1e
+
+p1e -down-> p2a
+
+p2a -down-> p2b
+p2b -down-> p2c
+
+p2c -down-> p3a
+
+p3a -down-> p3b
+
+p3b -down-> p4a
+
+p4a -down-> finish
+
+@enduml
