@@ -1,0 +1,120 @@
+@startuml linker_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam arrowColor #444444
+
+title Linking Process: .o + .a + .so to Executable
+
+start
+
+:Collect all input files
+(.o objects, .a archives, .so shared libs);
+
+partition "Phase 1: Symbol Resolution" #E8F5E9 {
+
+  :Initialize global symbol table;
+
+  repeat
+    :Read next input .o file;
+    :Add defined symbols to
+    global symbol table;
+    :Record undefined symbols
+    as pending references;
+  repeat while (More .o files to scan?) is (yes)
+  -> no;
+
+  repeat
+    :Scan next .a archive;
+    :Check if any archive member
+    resolves a pending undefined symbol;
+    if (Member resolves an undefined reference?) then (yes)
+      :Extract that member from archive;
+      :Add its defined symbols
+      to global table;
+      :Record any new undefined
+      symbols it introduces;
+    else (no)
+      :Skip this archive member;
+    endif
+  repeat while (More archives or new undefined references?) is (yes)
+  -> no;
+
+  :Record shared library (.so)
+  symbols as dynamically resolved;
+
+  if (Any symbols still undefined?) then (yes)
+    :Report "undefined reference" error;
+    stop
+  endif
+
+  if (Duplicate strong symbols found?) then (yes)
+    :Report "multiple definition" error;
+    stop
+  endif
+
+}
+
+partition "Phase 2: Relocation" #E3F2FD {
+
+  :Assign virtual base address
+  (typically 0x400000 for x86-64);
+
+  :Merge all .text sections sequentially
+  and assign addresses;
+
+  :Merge all .data sections
+  and assign addresses;
+
+  :Merge all .rodata sections
+  and assign addresses;
+
+  :Allocate .bss region
+  (size only, no file content);
+
+  repeat
+    :Process next relocation entry;
+    :Look up target symbol address
+    in global symbol table;
+    :Calculate final value
+    (absolute or PC-relative);
+    :Patch the instruction bytes
+    at the relocation offset;
+  repeat while (More relocation entries?) is (yes)
+  -> no;
+
+  :Generate PLT stubs and GOT
+  entries for dynamic symbols;
+
+}
+
+partition "Phase 3: Output Executable" #FFF3E0 {
+
+  :Build ELF header
+  (type=ET_EXEC, entry=_start);
+
+  :Build program headers describing
+  PT_LOAD, PT_DYNAMIC, PT_INTERP segments;
+
+  :Write ELF header to output;
+
+  :Write program header table;
+
+  :Write merged section contents
+  (.text, .rodata, .data, .dynamic, PLT, GOT);
+
+  :Write section header table
+  (optional, for debugging);
+
+  :Set entry point address
+  to _start symbol;
+
+  :Output final executable file;
+
+}
+
+stop
+
+@enduml

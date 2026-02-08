@@ -1,0 +1,69 @@
+@startuml intermediate_repr_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam shadowing false
+skinparam arrowColor #333333
+skinparam noteBorderColor #666666
+skinparam noteBackgroundColor #FFFDE7
+
+title GCC Intermediate Representation Pipeline
+
+rectangle "**Source Code**\n(C / C++)" as src #E8EAF6
+
+rectangle "**GENERIC**\n(language-independent tree)" as generic #BBDEFB
+
+rectangle "**GIMPLE**\n(simplified three-address form)" as gimple #C8E6C9
+
+rectangle "**GIMPLE-SSA**\n(Single Static Assignment)" as ssa #A5D6A7
+
+rectangle "**RTL**\n(Register Transfer Language)" as rtl #FFE0B2
+
+rectangle "**Assembly**\n(target-specific output)" as asm #FFCCBC
+
+src -down-> generic : front-end lowers
+generic -down-> gimple : gimplification
+gimple -down-> ssa : SSA construction
+ssa -down-> rtl : expand to RTL
+rtl -down-> asm : final code generation
+
+note right of generic
+  **Example (GENERIC tree)**
+  MODIFY_EXPR
+    VAR_DECL a
+    PLUS_EXPR
+      MULT_EXPR (b, c)
+      VAR_DECL d
+end note
+
+note right of gimple
+  **Example (GIMPLE)**
+  t1 = b * c
+  t2 = t1 + d
+  a = t2
+end note
+
+note right of ssa
+  **Example (GIMPLE-SSA)**
+  t1_1 = b_1 * c_1
+  t2_1 = t1_1 + d_1
+  a_2 = t2_1
+  (each variable assigned exactly once)
+  ----
+  Optimisations here:
+  constant propagation, DCE,
+  loop-invariant code motion
+end note
+
+note right of rtl
+  **Example (RTL pseudo)**
+  (set (reg:SI 100) (mult:SI (reg:SI 101) (reg:SI 102)))
+  (set (reg:SI 103) (plus:SI (reg:SI 100) (reg:SI 104)))
+  ----
+  Optimisations here:
+  register allocation,
+  instruction scheduling,
+  peephole optimisations
+end note
+
+@enduml

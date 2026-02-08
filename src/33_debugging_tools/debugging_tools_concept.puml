@@ -1,0 +1,64 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+title C Debugging Tool Categories
+
+package "Compile-Time Tools" as CT {
+  package "Warning Flags" as WF {
+    component "-Wall" as wall
+    component "-Wextra" as wextra
+    component "-Werror" as werror
+    component "-Wpedantic" as wped
+    component "-Wshadow" as wshad
+  }
+
+  package "Sanitizers (gcc/clang)" as SAN {
+    component "-fsanitize=address (ASan)\ndetects out-of-bounds, use-after-free" as asan
+    component "-fsanitize=undefined (UBSan)\ndetects undefined behavior" as ubsan
+    component "-fsanitize=thread (TSan)\ndetects data races" as tsan
+  }
+}
+
+package "Runtime Debuggers" as RD {
+  package "GDB" as GDBP {
+    component "Breakpoints (break, tbreak)" as bp
+    component "Watchpoints (watch, rwatch)" as wp
+    component "Stepping (step, next, finish, continue)" as st
+    component "Backtrace (bt, frame)" as bt
+    component "Inspect (print, display, x)" as insp
+  }
+}
+
+package "Dynamic Analysis — Valgrind" as DA {
+  component "memcheck — memory leaks, invalid access" as mc
+  component "callgrind — call-graph profiling" as cg
+  component "massif — heap usage profiling" as ms
+  component "helgrind — thread error detection" as hg
+}
+
+package "System Tracing" as STR {
+  component "strace — trace system calls and signals" as strace
+  component "ltrace — trace library function calls" as ltrace
+}
+
+package "Binary Inspection Tools" as BI {
+  component "objdump — disassembly and section headers" as objd
+  component "readelf — ELF structure and headers" as relf
+  component "nm — symbol table listing" as nm
+  component "ldd — shared library dependencies" as ldd
+  component "file, strings, hexdump — content analysis" as misc
+}
+
+package "Problem-to-Tool Mapping" as PTM {
+  component "Segfault .............. ASan or GDB" as p1
+  component "Memory leak .......... Valgrind memcheck" as p2
+  component "Undefined behavior ... UBSan" as p3
+  component "Data race ............ TSan or helgrind" as p4
+  component "Syscall failure ...... strace" as p5
+  component "Linker error ......... nm, ldd, readelf" as p6
+}
+
+@enduml

@@ -1,0 +1,61 @@
+@startuml parsing_ast_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam roundCorner 10
+skinparam shadowing false
+skinparam objectBorderColor #333333
+skinparam objectBackgroundColor #E8F4FD
+skinparam noteBorderColor #666666
+skinparam noteBackgroundColor #FFFDE7
+
+title AST for Expression: 2 * (3 + 4)
+
+object "MUL" as mul #FFD54F {
+  op = "*"
+}
+
+object "NUM(2)" as num2 #A5D6A7 {
+  value = 2
+}
+
+object "ADD" as add #FFD54F {
+  op = "+"
+}
+
+object "NUM(3)" as num3 #A5D6A7 {
+  value = 3
+}
+
+object "NUM(4)" as num4 #A5D6A7 {
+  value = 4
+}
+
+mul --> num2 : left
+mul --> add : right
+add --> num3 : left
+add --> num4 : right
+
+note bottom of mul
+  Root node: multiplication
+  operator applied to children
+end note
+
+note right of add
+  Parenthesised sub-expression
+  (3 + 4) becomes a subtree
+end note
+
+legend right
+  **BNF Grammar Rules**
+  ----
+  expression ::= term (('+' | '-') term)*
+  term       ::= factor (('*' | '/') factor)*
+  factor     ::= NUMBER | '(' expression ')'
+  ----
+  Precedence is encoded in the grammar:
+  * factor (highest precedence)
+  * term (multiplication, division)
+  * expression (addition, subtraction)
+end legend
+
+@enduml

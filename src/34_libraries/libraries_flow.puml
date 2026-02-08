@@ -1,0 +1,76 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+
+title Creating and Using a Shared Library
+
+start
+
+partition "Write Library Source" {
+  :Create add.c with add() function;
+  :Create mul.c with mul() function;
+  :Create math_lib.h header with
+  function declarations;
+}
+
+partition "Compile with Position-Independent Code" {
+  :gcc -fPIC -c add.c -o add.o;
+  :gcc -fPIC -c mul.c -o mul.o;
+}
+
+partition "Link into Shared Object" {
+  :gcc -shared
+  -Wl,-soname,libmath.so.1
+  -o libmath.so.1.0.0
+  add.o mul.o;
+}
+
+partition "Create Version Symlinks" {
+  :ln -s libmath.so.1.0.0 libmath.so.1
+  (soname symlink for runtime loader);
+
+  :ln -s libmath.so.1 libmath.so
+  (linker-name symlink for compile time);
+}
+
+partition "Write and Compile Application" {
+  :Write main.c that includes math_lib.h
+  and calls add() and mul();
+
+  :Compile the application
+  gcc main.c -L. -lmath -o app;
+}
+
+partition "Run the Application" {
+  :Set library search path and run
+  LD_LIBRARY_PATH=. ./app;
+}
+
+partition "Dynamic Linker Resolution (ld.so)" {
+  :ld.so reads the DT_NEEDED entry
+  and searches for libmath.so.1;
+
+  :Loads the shared object
+  into process address space;
+
+  :Sets up PLT (Procedure Linkage Table)
+  and GOT (Global Offset Table) entries;
+
+  :On first call to add() or mul(),
+  PLT stub triggers lazy binding;
+
+  :ld.so resolves symbol address
+  and patches the GOT entry;
+
+  :Subsequent calls jump directly
+  through the patched GOT;
+}
+
+:Library functions execute and
+return results to main();
+
+:Program completes and exits;
+
+stop
+
+@enduml

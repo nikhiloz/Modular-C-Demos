@@ -1,0 +1,74 @@
+@startuml lexical_analysis_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBackgroundColor #E8F4FD
+skinparam activityBorderColor #2980B9
+skinparam activityDiamondBackgroundColor #FEF9E7
+skinparam activityDiamondBorderColor #E67E22
+skinparam arrowColor #2C3E50
+
+title Tokenizer Loop — Lexical Analysis Flow
+
+start
+
+:Initialize input position\nto start of source;
+
+repeat
+
+  :Read current character (ch);
+
+  if (ch is whitespace or newline?) then (yes)
+    :Advance past whitespace;
+
+  elseif (ch is EOF?) then (yes)
+    :Emit EOF token;
+    stop
+
+  elseif (ch is letter or underscore?) then (yes)
+    :Scan while alphanumeric\nor underscore;
+    :Extract identifier string;
+    if (Found in keyword table?) then (yes)
+      :Emit KEYWORD token;
+    else (no)
+      :Emit IDENTIFIER token;
+    endif
+
+  elseif (ch is digit?) then (yes)
+    :Scan while digit\n(handle 0x hex, 0 octal);
+    :Emit INTEGER token;
+
+  elseif (ch is double quote?) then (yes)
+    :Scan until closing quote\n(handle escape sequences);
+    :Emit STRING token;
+
+  elseif (ch is single quote?) then (yes)
+    :Scan character constant\n(handle escapes);
+    :Emit CHAR token;
+
+  elseif (ch is slash '/') then (yes)
+    :Peek at next character;
+    if (Next is '/' ?) then (yes)
+      :Skip until end of line\n(line comment);
+    elseif (Next is '*' ?) then (yes)
+      :Skip until closing */\n(block comment);
+    else (no)
+      :Emit OPERATOR token\nfor division '/';
+    endif
+
+  elseif (ch is operator char\n(+ - * = < > ! & etc)) then (yes)
+    :Check for multi-char operators\n(==, !=, <=, >=, &&, etc);
+    :Emit OPERATOR token;
+
+  else (punctuation: ( ) { } ; , etc)
+    :Emit PUNCTUATION token;
+
+  endif
+
+  :Append token to\ntoken stream;
+
+repeat while (More input?) is (yes)
+-> no;
+
+stop
+
+@enduml

@@ -1,0 +1,73 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+title System V x86-64 Calling Convention
+
+package "Integer Argument Registers (in order)" as IAR {
+  component "1st arg: rdi" as r1
+  component "2nd arg: rsi" as r2
+  component "3rd arg: rdx" as r3
+  component "4th arg: rcx" as r4
+  component "5th arg: r8" as r5
+  component "6th arg: r9" as r6
+}
+
+package "Floating-Point Argument Registers" as FAR {
+  component "xmm0 through xmm7\n(up to 8 float/double args)" as xmm
+}
+
+note bottom of xmm
+  For variadic functions, AL holds the
+  count of vector registers used
+end note
+
+package "Return Value Registers" as RET {
+  component "rax — integer return value" as retint
+  component "xmm0 — float/double return value" as retfloat
+}
+
+package "Callee-Saved Registers\n(must be preserved across calls)" as CSR {
+  component "rbx" as cs1
+  component "rbp" as cs2
+  component "r12" as cs3
+  component "r13" as cs4
+  component "r14" as cs5
+  component "r15" as cs6
+}
+
+package "Caller-Saved Registers\n(may be clobbered by callee)" as CLR {
+  component "rax, rcx, rdx" as cl1
+  component "rsi, rdi" as cl2
+  component "r8, r9, r10, r11" as cl3
+}
+
+package "Stack Frame Layout\n(high address at top, low at bottom)" as SFL {
+  component "Previous frame" as prev
+  component "Surplus arguments (7th, 8th, ...)" as surplus
+  component "Return address (pushed by CALL)" as retaddr
+  component "Saved rbp (pushed by callee prologue)" as savedrbp
+  component "Local variables and spills" as locals
+  component "Red zone (128 bytes below rsp)" as redzone
+}
+
+prev -[#888]-> surplus
+surplus -[#888]-> retaddr
+retaddr -[#888]-> savedrbp
+savedrbp -[#888]-> locals
+locals -[#888]-> redzone
+
+note bottom of redzone
+  Red zone: 128-byte scratch area below rsp.
+  Leaf functions may use it without
+  adjusting the stack pointer.
+end note
+
+note bottom of cl3
+  Caller must save these before a call
+  if their values are still needed
+end note
+
+@enduml

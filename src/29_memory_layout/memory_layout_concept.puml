@@ -1,0 +1,75 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam roundCorner 4
+skinparam shadowing false
+
+title Process Virtual Address Space Layout (x86-64)
+
+skinparam rectangle {
+  StereotypeFontSize 11
+}
+
+rectangle "**0xFFFFFFFFFFFFFFFF**" as top_addr #FFFFFF {
+}
+
+rectangle "  **Kernel Space**\n  (not accessible from userspace)\n  Mapped above 0x7FFFFFFFFFFF  " as kernel_space #FFCDD2
+
+rectangle "───── Kernel / User boundary ─────" as boundary #EEEEEE
+
+rectangle "  **Stack**  ↓ grows downward\n  Local variables, return addresses, args\n  Starts near 0x7FFFFFFDE000\n  Permissions: RW- (read, write)  " as stack_area #BBDEFB
+
+rectangle "  ... unmapped guard pages ..." as gap1 #F5F5F5
+
+rectangle "  **mmap Region**\n  Shared libraries (libc.so, ld.so, etc.)\n  Memory-mapped files (mmap calls)\n  Large malloc allocations (>128KB)\n  Permissions: per-mapping (R-X for .text, RW- for .data)  " as mmap_area #CE93D8
+
+rectangle "  ... unmapped gap ..." as gap2 #F5F5F5
+
+rectangle "  **Heap**  ↑ grows upward\n  Dynamic allocations (malloc, calloc, realloc)\n  Managed by brk() / sbrk() syscalls\n  Permissions: RW- (read, write)\n  Current top tracked by program break  " as heap_area #C8E6C9
+
+rectangle "  **.bss**  (Block Started by Symbol)\n  Uninitialized global/static variables\n  Zero-filled at load time\n  Permissions: RW- (read, write)  " as bss_section #FFF9C4
+
+rectangle "  **.data**\n  Initialized global/static variables\n  e.g. int count = 42;\n  Permissions: RW- (read, write)  " as data_section #FFE0B2
+
+rectangle "  **.rodata**  (Read-Only Data)\n  String literals, const globals\n  e.g. \"Hello, World!\\n\"\n  Permissions: R-- (read only)  " as rodata_section #E1BEE7
+
+rectangle "  **.text**  (Code Segment)\n  Machine instructions\n  Entry point, all functions\n  Permissions: R-X (read, execute)  " as text_section #EF9A9A
+
+rectangle "**0x0000000000000000**\n(NULL page: unmapped, causes SIGSEGV)" as bottom_addr #FFFFFF
+
+top_addr -down-> kernel_space
+kernel_space -down-> boundary
+boundary -down-> stack_area
+stack_area -down-> gap1
+gap1 -down-> mmap_area
+mmap_area -down-> gap2
+gap2 -down-> heap_area
+heap_area -down-> bss_section
+bss_section -down-> data_section
+data_section -down-> rodata_section
+rodata_section -down-> text_section
+text_section -down-> bottom_addr
+
+note right of stack_area
+  ASLR randomizes
+  the stack base
+end note
+
+note right of mmap_area
+  ASLR randomizes
+  mmap base address
+end note
+
+note right of heap_area
+  sbrk(0) returns
+  current break
+end note
+
+note right of text_section
+  Position-Independent
+  Executables (PIE) use
+  ASLR here too
+end note
+
+@enduml

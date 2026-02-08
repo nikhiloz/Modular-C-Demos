@@ -1,0 +1,85 @@
+@startuml virtual_memory_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam ActivityBackgroundColor #E3F2FD
+skinparam ActivityBorderColor #1565C0
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ArrowColor #444444
+
+title Virtual Memory Access Flow
+
+start
+
+:CPU generates a virtual address for read or write;
+
+:Extract virtual page number (VPN) from address;
+
+:Look up VPN in the TLB cache;
+
+if (TLB hit found for this VPN?) then (yes -- fast path, ~1 cycle)
+  :Retrieve physical frame number from TLB entry;
+else (no -- TLB miss)
+  :Begin page table walk through 4 levels;
+  note right
+    PML4 -> PDPT -> PD -> PT
+    Each level requires a memory access
+    (~100 cycles total for full walk)
+  end note
+
+  :Read PML4 entry using CR3 base register;
+  :Read PDPT entry from PML4 result;
+  :Read PD entry from PDPT result;
+  :Read PT entry from PD result;
+
+  if (Page marked as present in PT entry?) then (yes)
+    :Extract physical frame number from PTE;
+    :Insert new VPN-to-PFN mapping into TLB;
+  else (no -- page fault raised)
+    :CPU raises page fault exception (#PF);
+    :Kernel page fault handler invoked;
+
+    if (Virtual address mapped in process VMA?) then (yes -- valid mapping)
+      if (Page data stored on swap or file?) then (yes -- major fault)
+        :Read page data from swap partition or file;
+        note right
+          Disk I/O required
+          ~10ms latency (HDD)
+          ~0.1ms latency (SSD)
+        end note
+        :Allocate a free physical frame;
+        :Copy data into the new frame;
+        :Update page table entry with new frame;
+        :Mark PTE as present and set permission bits;
+        :Insert mapping into TLB;
+      else (no -- minor fault)
+        :Allocate a free physical frame;
+        note right
+          No disk I/O needed
+          e.g., first access to mmap region
+          or copy-on-write trigger
+        end note
+        :Zero-fill or copy the frame contents;
+        :Update page table entry with new frame;
+        :Mark PTE as present and set permission bits;
+        :Insert mapping into TLB;
+      endif
+      :Return from fault handler and resume instruction;
+    else (no -- invalid address)
+      :Kernel sends SIGSEGV to the process;
+      :Process terminated with segmentation fault;
+      stop
+    endif
+  endif
+endif
+
+:Combine physical frame number with page offset;
+:Form the complete physical address;
+:Send physical address to memory controller;
+:Memory access completes successfully;
+
+stop
+
+@enduml

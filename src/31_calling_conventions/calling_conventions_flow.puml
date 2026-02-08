@@ -1,0 +1,59 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+
+title Function Call Flow — System V x86-64
+
+start
+
+partition "Caller Setup" {
+  :Evaluate function arguments;
+  :Place first 6 integer args in
+  rdi, rsi, rdx, rcx, r8, r9;
+  :Place float/double args in xmm0 through xmm7;
+
+  if (More than 6 integer args?) then (yes)
+    :Push surplus arguments onto
+    stack in right-to-left order;
+  else (no)
+  endif
+
+  :Align stack pointer (rsp) to 16-byte boundary;
+  :Execute CALL instruction
+  (pushes return address onto stack);
+}
+
+partition "Callee Prologue" {
+  :push rbp — save old frame pointer;
+  :mov rbp, rsp — establish new frame;
+  :Save callee-saved registers
+  (rbx, r12-r15) if function uses them;
+  :sub rsp, N — allocate space for local variables;
+}
+
+:Execute function body;
+
+:Place integer return value in rax;
+
+note right
+  Float return value
+  goes in xmm0
+end note
+
+partition "Callee Epilogue" {
+  :Restore callee-saved registers;
+  :mov rsp, rbp — deallocate locals;
+  :pop rbp — restore old frame pointer;
+  :Execute RET instruction
+  (pops return address, jumps to caller);
+}
+
+partition "Caller Resumes" {
+  :Read return value from rax (or xmm0);
+  :Clean up any stack-passed arguments if needed;
+  :Continue execution;
+}
+
+stop
+
+@enduml

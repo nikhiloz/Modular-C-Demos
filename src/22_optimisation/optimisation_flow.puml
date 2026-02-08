@@ -1,0 +1,52 @@
+@startuml optimisation_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityDiamondBorderColor #333333
+skinparam shadowing false
+
+title Optimisation Pipeline — Code Flow
+
+start
+
+:Receive unoptimised IR;
+
+partition "Local Optimisation Passes" {
+  :Run **Constant Folding** pass\n  Evaluate compile-time-known expressions\n  e.g. x = 3 + 4  =>  x = 7;
+
+  :Run **Dead Code Elimination** (DCE) pass\n  Remove statements whose results\n  are never used;
+
+  :Run **Strength Reduction** pass\n  Replace expensive ops with cheaper ones\n  e.g. x * 8  =>  x << 3;
+}
+
+partition "Loop Optimisation Passes" {
+  :Perform **Loop Analysis**\n  Identify natural loops, back-edges,\n  induction variables;
+
+  :Run **Loop-Invariant Code Motion** (LICM)\n  Hoist computations that do not change\n  across iterations out of the loop;
+
+  if (Loop iteration count is small and known?) then (yes)
+    :Apply **Loop Unrolling**\n  Duplicate loop body to reduce\n  branch overhead;
+  else (no)
+    :Skip unrolling for this loop;
+  endif
+}
+
+partition "Interprocedural Passes" {
+  :Evaluate **Inlining** decisions\n  Inline small or hot functions\n  to eliminate call overhead;
+
+  :Run **CSE** pass (global)\n  Eliminate redundant computations\n  across basic blocks;
+
+  if (Function ends with a recursive\ntail call to itself?) then (yes)
+    :Apply **Tail Call Optimisation**\n  Reuse current stack frame\n  to prevent stack growth;
+  else (no)
+    :No tail call transformation needed;
+  endif
+}
+
+:Emit **optimised IR** for code generation;
+
+stop
+
+@enduml

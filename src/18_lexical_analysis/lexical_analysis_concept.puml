@@ -1,0 +1,74 @@
+@startuml lexical_analysis_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam rectangleBorderColor #2980B9
+skinparam arrowColor #2C3E50
+skinparam noteBackgroundColor #FCF3CF
+skinparam noteBorderColor #7F8C8D
+skinparam componentBackgroundColor #FEF9E7
+skinparam componentBorderColor #E67E22
+
+title Lexical Analysis — Tokenization
+
+rectangle "**Input Source**\nint main() { return 0; }" as INPUT #D5F5E3
+
+rectangle "**Lexer / Tokenizer**\n(Scanner)" as LEXER #D6EAF8
+
+rectangle "**Token Stream**" as STREAM #D5F5E3
+
+INPUT -down-> LEXER
+LEXER -down-> STREAM
+
+note right of STREAM
+  Token sequence produced:
+  ----
+  KEYWORD    : "int"
+  IDENTIFIER : "main"
+  PUNCT      : "("
+  PUNCT      : ")"
+  PUNCT      : "{"
+  KEYWORD    : "return"
+  INTEGER    : "0"
+  PUNCT      : ";"
+  PUNCT      : "}"
+  EOF
+end note
+
+package "Token Categories" as CATS {
+  component "**Keywords**\nint, return, if,\nwhile, struct, ..." as KW
+  component "**Identifiers**\nmain, count,\nmy_var, ..." as ID
+  component "**Integer Literals**\n0, 42, 0xFF, 077" as INTL
+  component "**String Literals**\n\"hello\", \"world\"" as STRL
+  component "**Operators**\n+  -  *  /  =\n==  !=  <  >" as OPS
+  component "**Punctuation**\n(  )  {  }\n;  ,  :" as PUNCT
+  component "**Comments**\n// line comment\n/* block comment */" as CMT
+}
+
+LEXER -down-> CATS : classifies\ncharacters into
+
+rectangle "**DFA (Deterministic Finite Automaton)**" as DFA #FADBD8 {
+  rectangle "Start" as S0
+  rectangle "In Identifier" as S1
+  rectangle "In Number" as S2
+  rectangle "In String" as S3
+  rectangle "In Comment" as S4
+  rectangle "Accept Token" as SA #D5F5E3
+
+  S0 -right-> S1 : letter / underscore
+  S0 -right-> S2 : digit
+  S0 -down-> S3 : double quote
+  S0 -down-> S4 : slash
+  S1 -right-> SA : non-alphanum
+  S2 -right-> SA : non-digit
+  S3 -down-> SA : closing quote
+  S4 -down-> SA : end of comment
+}
+
+note bottom of DFA
+  The lexer uses a DFA (or equivalent logic)
+  to transition between states based on the
+  current character, recognizing token boundaries.
+end note
+
+@enduml

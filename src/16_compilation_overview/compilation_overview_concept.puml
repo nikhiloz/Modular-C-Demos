@@ -1,0 +1,51 @@
+@startuml compilation_overview_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam rectangleBorderColor #2980B9
+skinparam arrowColor #2C3E50
+skinparam noteBorderColor #7F8C8D
+skinparam noteBackgroundColor #FCF3CF
+
+title The Compilation Pipeline
+
+rectangle "Source Code\n(.c file)" as SRC #D5F5E3
+rectangle "Preprocessor\n(cpp)" as PP
+rectangle "Expanded Source\n(.i file)" as EXP #FEF9E7
+rectangle "Compiler\n(cc1)" as CC
+rectangle "Assembly\n(.s file)" as ASM_FILE #FEF9E7
+rectangle "Assembler\n(as)" as AS
+rectangle "Object File\n(.o file)" as OBJ #FEF9E7
+rectangle "Linker\n(ld)" as LD
+rectangle "Executable\n(a.out / named)" as EXE #D5F5E3
+
+SRC -down-> PP : ""gcc -E""
+PP -down-> EXP
+EXP -down-> CC : ""gcc -S""
+CC -down-> ASM_FILE
+ASM_FILE -down-> AS : ""gcc -c""
+AS -down-> OBJ
+OBJ -down-> LD : ""gcc"" (default)
+LD -down-> EXE
+
+note right of PP
+  Handles #include, #define,
+  #ifdef, and macro expansion
+end note
+
+note right of CC
+  Parses C code, builds AST,
+  optimizes, emits assembly
+end note
+
+note right of AS
+  Encodes assembly mnemonics
+  into machine code bytes
+end note
+
+note right of LD
+  Resolves symbols, links
+  libraries, applies relocations
+end note
+
+@enduml

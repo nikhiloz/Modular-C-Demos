@@ -1,0 +1,64 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+
+title Debugging Workflow
+
+start
+
+:Bug is reported or observed;
+
+:Reproduce the bug reliably;
+
+:Compile with debug info and sanitizers
+gcc -g -fsanitize=address -o prog prog.c;
+
+:Run the program to trigger the bug;
+
+if (Sanitizer report printed?) then (yes)
+  :Read the sanitizer report;
+  :Identify source file and line number from report;
+  :Apply fix based on sanitizer findings;
+elseif (Suspected memory issue?) then (yes)
+  :Run under Valgrind
+  valgrind --leak-check=full ./prog;
+  :Analyze the Valgrind report
+  for leaks, invalid reads/writes;
+  :Fix memory management errors;
+elseif (Logic error suspected?) then (yes)
+  :Launch GDB: gdb ./prog;
+  :Set breakpoints at suspect locations;
+  :Step through execution
+  (step, next, finish);
+  :Inspect variables and call stack
+  (print, bt, info locals);
+  :Identify the root cause;
+  :Apply fix;
+elseif (System call failure?) then (yes)
+  :Run with strace
+  strace -f ./prog;
+  :Identify the failing system call
+  and its errno value;
+  :Fix the system interaction;
+else (uncertain)
+  :Add printf or logging instrumentation;
+  :Re-run and analyze output;
+  :Identify the issue from log data;
+  :Apply fix;
+endif
+
+:Recompile the program;
+
+:Verify the fix resolves the original bug;
+
+:Run the full test suite;
+
+if (All tests pass?) then (yes)
+  :Commit the fix;
+  stop
+else (no)
+  :Investigate the test regression;
+  stop
+endif
+
+@enduml

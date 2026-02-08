@@ -1,0 +1,70 @@
+@startuml cross_compilation_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam ActivityBackgroundColor #E3F2FD
+skinparam ActivityBorderColor #1565C0
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ArrowColor #444444
+
+title Cross-Compilation Workflow
+
+start
+
+:Install the cross-toolchain on the host;
+note right
+  sudo apt install
+  gcc-aarch64-linux-gnu
+  binutils-aarch64-linux-gnu
+end note
+
+:Write portable C code;
+note right
+  Use <stdint.h> for fixed-width types
+  Avoid inline assembly
+  Avoid platform-specific APIs
+end note
+
+:Set the CROSS_COMPILE environment variable;
+note right
+  export CROSS_COMPILE=aarch64-linux-gnu-
+end note
+
+:Compile using the cross-compiler;
+note right
+  ${CROSS_COMPILE}gcc -o hello hello.c
+  Produces an ARM64 ELF binary
+end note
+
+:Verify the output binary format;
+note right
+  file hello
+  Expected: ELF 64-bit LSB executable,
+  ARM aarch64
+end note
+
+if (Target hardware available?) then (yes)
+  :Transfer binary to the target device;
+  note right
+    scp hello pi@target:~/
+  end note
+
+  :Run on the target via SSH;
+  note right
+    ssh pi@target ./hello
+  end note
+else (no)
+  :Test with QEMU user-mode emulation;
+  note right
+    qemu-aarch64-static ./hello
+    Emulates ARM64 on x86-64 host
+  end note
+endif
+
+:Verify program output is correct;
+
+stop
+
+@enduml

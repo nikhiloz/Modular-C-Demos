@@ -1,0 +1,76 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+title Static vs Dynamic Libraries
+
+package "Static Library Build Pipeline (.a)" as SL {
+  component "Source files\nadd.c, mul.c" as ss
+  component "Compile to object files\ngcc -c add.c mul.c" as sc
+  component "Create archive\nar rcs libmath.a add.o mul.o" as ar
+  component "libmath.a\n(archive of object files)" as slib
+  component "Link into executable\ngcc main.c -L. -lmath -o app" as slink
+  component "app (executable)\nlibrary code is EMBEDDED inside" as sapp
+
+  ss -[#2E86C1]-> sc
+  sc -[#2E86C1]-> ar
+  ar -[#2E86C1]-> slib
+  slib -[#2E86C1]-> slink
+  slink -[#2E86C1]-> sapp
+}
+
+note bottom of sapp
+  Static linking pros:
+  - Self-contained, no runtime deps
+  - Deterministic behavior
+  Static linking cons:
+  - Larger binary size
+  - No shared memory between processes
+  - Must relink to update library
+end note
+
+package "Dynamic Library Build Pipeline (.so)" as DL {
+  component "Source files\nadd.c, mul.c" as ds
+  component "Compile with PIC\ngcc -fPIC -c add.c mul.c" as dc
+  component "Link into shared object\ngcc -shared\n  -Wl,-soname,libmath.so.1\n  -o libmath.so.1.0.0 add.o mul.o" as dlink
+  component "libmath.so.1.0.0\n(shared object file)" as dlib
+  component "Link executable against .so\ngcc main.c -L. -lmath -o app" as dcc
+  component "app (executable)\ncontains REFERENCES only" as dapp
+  component "Runtime: ld.so loads\nlibmath.so.1 into memory" as rt
+
+  ds -[#27AE60]-> dc
+  dc -[#27AE60]-> dlink
+  dlink -[#27AE60]-> dlib
+  dlib -[#27AE60]-> dcc
+  dcc -[#27AE60]-> dapp
+  dapp -[#27AE60]-> rt
+}
+
+note bottom of rt
+  Dynamic linking pros:
+  - Smaller binaries
+  - Shared memory across processes
+  - Update .so without relinking
+  Dynamic linking cons:
+  - Requires .so present at runtime
+  - Slight startup overhead (symbol resolution)
+end note
+
+package "Soname Versioning Scheme" as SV {
+  component "libmath.so\n(linker name — symlink)" as ln
+  component "libmath.so.1\n(soname — symlink)" as sn
+  component "libmath.so.1.0.0\n(real name — actual file)" as rf
+
+  ln -[#888]-> sn : symlink
+  sn -[#888]-> rf : symlink
+}
+
+note bottom of ln
+  Linker name: used at compile time with -lmath
+  Soname: embedded in .so, used at load time
+  Real name: includes full version (major.minor.patch)
+end note
+
+@enduml

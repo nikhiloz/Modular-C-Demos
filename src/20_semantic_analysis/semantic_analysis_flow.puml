@@ -1,0 +1,69 @@
+@startuml semantic_analysis_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityDiamondBorderColor #333333
+skinparam shadowing false
+
+title Semantic Analysis Pass — Code Flow
+
+start
+
+:Initialise global scope and error list;
+:Push global scope onto scope stack;
+
+while (More AST nodes to visit?) is (yes)
+  :Fetch next AST node;
+
+  if (Node is a **block entry** ?) then (yes)
+    :Push new scope onto scope stack;
+
+  elseif (Node is a **block exit** ?) then (yes)
+    :Pop current scope from stack;
+
+  elseif (Node is a **declaration** ?) then (yes)
+    :Extract name and declared type;
+    if (Name already declared in current scope?) then (yes)
+      :Record error — duplicate declaration;
+    else (no)
+      :Add symbol (name, type) to current scope;
+    endif
+
+  elseif (Node is a **variable use** ?) then (yes)
+    :Look up name from innermost to outermost scope;
+    if (Symbol found in any scope?) then (yes)
+      :Attach resolved type to AST node;
+    else (no)
+      :Record error — undeclared variable;
+    endif
+
+  elseif (Node is an **expression** ?) then (yes)
+    :Infer type of left operand;
+    :Infer type of right operand;
+    if (Operand types are compatible?) then (yes)
+      if (Implicit conversion needed, e.g. int to float?) then (yes)
+        :Insert implicit cast node in AST;
+      else (no)
+        :Types match exactly — no cast needed;
+      endif
+      :Set result type on expression node;
+    else (no)
+      :Record error — incompatible types;
+    endif
+
+  else (other node)
+    :Continue traversal — no semantic action;
+  endif
+endwhile (no)
+
+if (Error list is empty?) then (yes)
+  :Report success — semantic analysis passed;
+else (no)
+  :Report all collected errors;
+endif
+
+stop
+
+@enduml

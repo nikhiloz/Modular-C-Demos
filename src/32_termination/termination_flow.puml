@@ -1,0 +1,53 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+
+title Exit Sequence Flow
+
+start
+
+:main() returns a value;
+
+:Return value becomes the
+exit(status) argument;
+
+:Run atexit-registered handlers
+in LIFO order (last registered runs first);
+
+:Run .fini_array destructors
+in reverse registration order;
+
+:Flush all stdio buffers
+(stdout, stderr, open FILE streams);
+
+:Close all open file descriptors;
+
+:Call _exit(status) system call;
+
+partition "Kernel Cleanup" {
+  :Release all memory mappings
+  (heap, stack, mmap regions);
+
+  :Release remaining file descriptors
+  and file locks;
+
+  :Send SIGCHLD signal to parent process;
+
+  :Store exit status in process table
+  for parent to retrieve;
+}
+
+:Process enters zombie state
+(entry remains in process table);
+
+:Parent process calls
+wait() or waitpid();
+
+:Kernel delivers exit status to parent;
+
+:Zombie process entry is reaped
+and removed from process table;
+
+stop
+
+@enduml

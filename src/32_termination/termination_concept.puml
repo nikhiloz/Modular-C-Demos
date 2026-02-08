@@ -1,0 +1,78 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+title Process Termination Paths in C
+
+package "Normal Termination" as NP {
+  component "main() returns value" as mr
+  component "exit(status) called" as ex
+  component "atexit handlers run (LIFO)" as ah
+  component ".fini_array destructors run" as fini
+  component "Flush all stdio buffers" as flush
+  component "_exit(status) syscall" as uexit
+}
+
+mr -[#2E86C1]-> ex
+ex -[#2E86C1]-> ah
+ah -[#2E86C1]-> fini
+fini -[#2E86C1]-> flush
+flush -[#2E86C1]-> uexit
+
+package "Abnormal Termination" as AP {
+  component "abort() called" as ab
+  component "Raises SIGABRT" as sigab
+  component "Core dump generated\n(if core dumps enabled)" as core
+}
+
+ab -[#E74C3C]-> sigab
+sigab -[#E74C3C]-> core
+
+package "Signal Termination" as SP {
+  component "Signal received\n(SIGSEGV, SIGFPE, SIGTERM, etc.)" as sig
+  component "Default signal handler invoked" as dh
+  component "Process terminated" as pt
+}
+
+sig -[#F39C12]-> dh
+dh -[#F39C12]-> pt
+
+package "Kernel Cleanup" as KC {
+  component "Release memory mappings" as rmem
+  component "Close all file descriptors" as cfd
+  component "Signal parent with SIGCHLD" as schld
+  component "Store exit status" as ses
+  component "Process becomes zombie" as zombie
+  component "Parent calls wait() or waitpid()" as pw
+  component "Zombie is reaped" as zr
+}
+
+uexit -[#2E86C1]-> rmem
+core -[#E74C3C]-> rmem
+pt -[#F39C12]-> rmem
+rmem --> cfd
+cfd --> schld
+schld --> ses
+ses --> zombie
+zombie --> pw
+pw --> zr
+
+package "Exit Code Encoding (from wait status)" as ECE {
+  component "WIFEXITED(status)\nnon-zero if normal exit" as we
+  component "WEXITSTATUS(status)\nexit code 0-255" as wes
+  component "WIFSIGNALED(status)\nnon-zero if killed by signal" as ws
+  component "WTERMSIG(status)\nsignal number that caused death" as wts
+}
+
+we --> wes
+ws --> wts
+
+note bottom of wes
+  Convention: 0 = success, nonzero = failure.
+  Exit codes above 128 often encode
+  128 + signal_number (e.g., 139 = SIGSEGV).
+end note
+
+@enduml

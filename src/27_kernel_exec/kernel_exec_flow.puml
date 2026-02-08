@@ -1,0 +1,72 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E8F4FD
+skinparam activityDiamondBackgroundColor #FFF3CD
+skinparam activityDiamondBorderColor #856404
+skinparam roundCorner 8
+skinparam shadowing false
+
+title fork() + execve() Execution Flow
+
+start
+
+:Parent process calls **fork()**;
+
+:Kernel creates child process
+  (Copy-On-Write clone of parent);
+
+partition "In Child Process" {
+  :Child calls **execve(path, argv, envp)**;
+
+  :Kernel checks file permissions
+    (owner, group, other execute bit);
+
+  :Read first bytes of file;
+
+  if (ELF magic 0x7f454C46 present?) then (yes)
+    :Parse ELF headers
+      (e_type, e_machine, e_entry, program headers);
+  else (no)
+    :Return -ENOEXEC to child;
+    stop
+  endif
+
+  :Flush old process memory
+    (unmap all previous mappings);
+
+  :Map PT_LOAD segments into
+    new address space (text, data);
+
+  :Set up initial stack layout:
+    argc, argv pointers, envp pointers,
+    auxiliary vector (AT_PHDR, AT_ENTRY, etc.);
+
+  if (ELF has .interp section?) then (yes: dynamically linked)
+    :Load ld.so (dynamic linker)
+      into process address space;
+    :Set instruction pointer
+      to ld.so entry point;
+    :ld.so resolves shared libraries
+      and performs relocations;
+  else (no: statically linked)
+    :Set instruction pointer
+      to ELF e_entry address directly;
+  endif
+
+  :Return to userspace at
+    the chosen entry point;
+
+  :_start runs (from crt1.o);
+
+  :__libc_start_main initialises libc;
+
+  :Call **main(argc, argv, envp)**;
+}
+
+:main() returns or exit() called;
+
+stop
+
+@enduml

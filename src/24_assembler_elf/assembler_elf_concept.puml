@@ -1,0 +1,77 @@
+@startuml assembler_elf_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam arrowColor #444444
+
+title ELF Object File Structure (.o)
+
+rectangle "ELF Object File" as ELF #FFFFFF {
+
+    rectangle "ELF Header" as HDR #B3E5FC {
+        rectangle "Magic: 0x7F 'E' 'L' 'F'" as MAGIC
+        rectangle "Class: 64-bit (ELFCLASS64)" as CLASS
+        rectangle "Type: ET_REL (relocatable)" as TYPE
+        rectangle "Machine: EM_X86_64" as MACH
+        rectangle "Entry: 0x0 (not set for .o)" as ENTRY
+        rectangle "Section header offset" as SHOFF
+    }
+
+    rectangle ".text Section" as TEXT #C8E6C9 {
+        rectangle "Machine code instructions\n(compiled function bodies)" as TEXTD
+    }
+
+    rectangle ".data Section" as DATA #DCEDC8 {
+        rectangle "Initialized global and\nstatic variables" as DATAD
+    }
+
+    rectangle ".bss Section" as BSS #F0F4C3 {
+        rectangle "Uninitialized data\n(zero-filled at load time)" as BSSD
+    }
+
+    rectangle ".rodata Section" as RODATA #FFF9C4 {
+        rectangle "Read-only constants\nand string literals" as RODATAD
+    }
+
+    rectangle ".symtab Section" as SYMTAB #FFE0B2 {
+        rectangle "Symbol Table entries:\n  name, value, size,\n  binding (LOCAL/GLOBAL),\n  section index" as SYMTABD
+    }
+
+    rectangle ".rel.text Section" as RELTEXT #FFCCBC {
+        rectangle "Relocation entries for .text:\n  offset, type (R_X86_64_PC32,\n  R_X86_64_PLT32, ...),\n  symbol reference" as RELTEXTD
+    }
+
+    rectangle ".strtab Section" as STRTAB #D1C4E9 {
+        rectangle "String table:\n  null-terminated symbol\n  and section names" as STRTABD
+    }
+
+    rectangle "Section Header Table" as SHT #B0BEC5 {
+        rectangle "Array of section headers\n  (one per section):\n  name, type, flags,\n  offset, size, alignment" as SHTD
+    }
+}
+
+HDR -[#0288D1]down-> TEXT
+TEXT -[#388E3C]down-> DATA
+DATA -[#689F38]down-> BSS
+BSS -[#AFB42B]down-> RODATA
+RODATA -[#FFA000]down-> SYMTAB
+SYMTAB -[#E64A19]down-> RELTEXT
+RELTEXT -[#7B1FA2]down-> STRTAB
+STRTAB -[#546E7A]down-> SHT
+
+note bottom of SHT
+  The section header table
+  sits at the end of the file.
+  The ELF header points to it
+  via e_shoff.
+end note
+
+note bottom of RELTEXT
+  Relocations tell the linker
+  which bytes in .text need
+  patching once final addresses
+  are assigned.
+end note
+
+@enduml

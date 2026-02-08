@@ -1,0 +1,53 @@
+@startuml compilation_overview_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBackgroundColor #E8F4FD
+skinparam activityBorderColor #2980B9
+skinparam activityDiamondBackgroundColor #FEF9E7
+skinparam activityDiamondBorderColor #E67E22
+skinparam arrowColor #2C3E50
+
+title Code Flow: gcc hello.c -o hello
+
+start
+
+partition "**1. Preprocessing (cpp)**" {
+  :Invoke preprocessor (cpp);
+  :Process #include directives\n(insert header file contents);
+  :Expand #define macros;
+  :Evaluate #if / #ifdef conditionals;
+  :Strip comments;
+  :Output expanded source (.i file);
+}
+
+partition "**2. Compilation (cc1)**" {
+  :Invoke compiler (cc1);
+  :Lexical analysis: tokenize source;
+  :Syntactic analysis: parse tokens;
+  :Build Abstract Syntax Tree (AST);
+  :Semantic analysis and type checking;
+  :Optimize intermediate representation;
+  :Generate target assembly;
+  :Output assembly file (.s);
+}
+
+partition "**3. Assembly (as)**" {
+  :Invoke assembler (as);
+  :Parse assembly mnemonics;
+  :Encode machine instructions;
+  :Build symbol table and relocation entries;
+  :Output object file (.o);
+}
+
+partition "**4. Linking (ld)**" {
+  :Invoke linker (ld);
+  :Merge all object file sections;
+  :Resolve external symbol references;
+  :Link C runtime (crt0, libc);
+  :Apply relocations to fix addresses;
+  :Output final executable (hello);
+}
+
+stop
+
+@enduml

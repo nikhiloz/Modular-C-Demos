@@ -1,0 +1,60 @@
+@startuml preprocessor_deep_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam rectangleBorderColor #2980B9
+skinparam componentBackgroundColor #FEF9E7
+skinparam componentBorderColor #E67E22
+skinparam arrowColor #2C3E50
+skinparam noteBackgroundColor #FCF3CF
+skinparam noteBorderColor #7F8C8D
+
+title C Preprocessor Features
+
+rectangle "Source Code (.c)" as SRC #D5F5E3
+rectangle "**C Preprocessor (cpp)**\nRuns BEFORE compilation" as CPP #D6EAF8
+
+rectangle "Expanded Source (.i)" as OUT #D5F5E3
+
+SRC -down-> CPP
+CPP -down-> OUT
+
+package "File Inclusion" as P1 {
+  component "#include <header.h>\n(system search path)" as INC1
+  component "#include \"header.h\"\n(local search path)" as INC2
+}
+
+package "Macro Expansion" as P2 {
+  component "Object-like macros\n#define PI 3.14159" as MAC1
+  component "Function-like macros\n#define MAX(a,b) ((a)>(b)?(a):(b))" as MAC2
+}
+
+package "Stringification & Pasting" as P3 {
+  component "Stringification (#)\n#x becomes \"x\"" as STR
+  component "Token Pasting (##)\na##b becomes ab" as PASTE
+}
+
+package "Conditional Compilation" as P4 {
+  component "#if / #elif / #else / #endif" as COND1
+  component "#ifdef / #ifndef" as COND2
+}
+
+package "Other Features" as P5 {
+  component "Predefined Macros\n__FILE__  __LINE__\n__DATE__  __STDC__" as PREDEF
+  component "Pragmas\n#pragma once\n#pragma pack" as PRAG
+}
+
+CPP -right-> P1
+CPP -right-> P2
+CPP -left-> P3
+CPP -left-> P4
+CPP -down-> P5
+
+note bottom of OUT
+  The .i file contains pure C code
+  with all macros expanded, headers
+  inlined, and conditionals resolved.
+  No preprocessor directives remain.
+end note
+
+@enduml

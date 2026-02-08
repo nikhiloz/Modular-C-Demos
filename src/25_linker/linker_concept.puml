@@ -1,0 +1,81 @@
+@startuml linker_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam componentBorderColor #333333
+skinparam arrowColor #444444
+skinparam packageBorderColor #555555
+
+title Linker: Combining Object Files into an Executable
+
+package "Input Files" as INPUTS {
+    rectangle "main.o" as MAINO #C8E6C9 {
+        rectangle ".text (main code)" as MT
+        rectangle ".data (main data)" as MD
+        rectangle "Undefined: printf, sqrt, utils_calc" as MU #FFCCBC
+    }
+
+    rectangle "utils.o" as UTILSO #C8E6C9 {
+        rectangle ".text (utils code)" as UT
+        rectangle ".data (utils data)" as UD
+        rectangle "Defined: utils_calc" as UDEF #A5D6A7
+    }
+
+    rectangle "libm.a\n(static archive)" as LIBMA #FFF9C4 {
+        rectangle "sqrt.o extracted\nwhen sqrt is needed" as SQRTO
+    }
+
+    rectangle "libc.so\n(shared library)" as LIBCSO #FFE0B2 {
+        rectangle "printf resolved\nat runtime via PLT/GOT" as PRINTFR
+    }
+}
+
+package "Linker Processing" as PROC {
+    rectangle "Phase 1: Symbol Resolution" as P1 #B3E5FC {
+        rectangle "Match undefined symbols\nto defined symbols across\nall input files" as P1D
+    }
+
+    rectangle "Phase 2: Section Merging" as P2 #C5CAE9 {
+        rectangle "Merge all .text sections\ninto one combined .text\nMerge all .data into one .data" as P2D
+    }
+
+    rectangle "Phase 3: Relocation" as P3 #D1C4E9 {
+        rectangle "Assign virtual addresses\nto all merged sections\nand patch all references" as P3D
+    }
+}
+
+package "Output: ELF Executable" as OUTPUT {
+    rectangle "Executable" as EXEC #A5D6A7 {
+        rectangle "ELF Header\n(ET_EXEC, entry=_start)" as EH
+        rectangle "Program Headers (PHDR)" as PH
+        rectangle "Merged .text segment" as MTEXT
+        rectangle "Merged .data segment" as MDATA
+        rectangle ".bss (zero-init)" as MBSS
+    }
+
+    rectangle "Dynamic Linking Support" as DYN #FFECB3 {
+        rectangle "PLT (Procedure Linkage Table)\nStub code that jumps through GOT" as PLT
+        rectangle "GOT (Global Offset Table)\nHolds resolved addresses\nfilled by ld.so at runtime" as GOT
+    }
+}
+
+MAINO -[#4CAF50]down-> P1
+UTILSO -[#4CAF50]down-> P1
+LIBMA -[#FFC107]down-> P1
+LIBCSO -[#FF9800]down-> P1
+
+P1 -[#1976D2]down-> P2
+P2 -[#5C6BC0]down-> P3
+P3 -[#7B1FA2]down-> EXEC
+
+LIBCSO ..[#FF5722]right.> DYN : runtime binding
+
+note bottom of GOT
+  For shared libraries: first call
+  goes through PLT to ld.so resolver
+  which fills the GOT entry. Later
+  calls jump directly via GOT.
+end note
+
+@enduml

@@ -1,0 +1,77 @@
+@startuml elf_executable_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam arrowColor #444444
+skinparam packageBorderColor #555555
+
+title Relocatable Object (.o) vs ELF Executable
+
+package "Relocatable Object File (.o)" as OBJ {
+    rectangle "ELF Header" as OH #B3E5FC {
+        rectangle "Type: ET_REL" as OT
+        rectangle "Entry: 0x0 (none)" as OE
+        rectangle "No program headers" as ONP
+    }
+    rectangle "Sections (file offsets only)" as OSEC #C8E6C9 {
+        rectangle ".text at offset 0x40" as OTX
+        rectangle ".data at offset 0x120" as ODA
+        rectangle ".bss  (size only)" as OBS
+    }
+    rectangle "Relocations Pending" as OREL #FFCCBC {
+        rectangle "R_X86_64_PC32: call printf\nR_X86_64_PLT32: call sqrt\nAddresses TBD" as ORELD
+    }
+    rectangle "Section Header Table" as OSHT #B0BEC5 {
+        rectangle "Describes all sections\nNo program header table" as OSHTD
+    }
+}
+
+package "ELF Executable" as EXEC {
+    rectangle "ELF Header" as EH #B3E5FC {
+        rectangle "Type: ET_EXEC or ET_DYN" as ET
+        rectangle "Entry: 0x401000 (_start)" as EE
+        rectangle "Program header table present" as EPH
+    }
+    rectangle "Program Headers (Segments)" as PHDR #DCEDC8 {
+        rectangle "PT_PHDR  — program header table itself" as SPHDR
+        rectangle "PT_INTERP — path: /lib64/ld-linux-x86-64.so.2" as SINTERP
+        rectangle "PT_LOAD  — .text segment (R-X)\n  vaddr: 0x400000, memsz: 0x1000" as SLOAD1
+        rectangle "PT_LOAD  — .data segment (RW-)\n  vaddr: 0x600000, memsz: 0x200" as SLOAD2
+        rectangle "PT_DYNAMIC — dynamic linking info\n  (.dynamic section)" as SDYN
+    }
+    rectangle "All Relocations Resolved" as ERES #A5D6A7 {
+        rectangle "call printf -> 0x401050 (PLT stub)\ncall sqrt  -> 0x401060 (PLT stub)\nAll addresses patched" as ERESD
+    }
+    rectangle "Section Header Table (optional)" as ESHT #B0BEC5 {
+        rectangle "Present for debugging\nNot needed for execution" as ESHTD
+    }
+}
+
+package "Virtual Memory Layout (at runtime)" as VML {
+    rectangle "0x400000: ELF Headers + .rodata" as VM1 #E1F5FE
+    rectangle "0x401000: .text (code, executable)" as VM2 #C8E6C9
+    rectangle "0x600000: .data (read-write)" as VM3 #FFF9C4
+    rectangle "0x601000: .bss  (zero-filled)" as VM4 #FFF3E0
+    rectangle "0x7fff...: Stack (grows down)" as VM5 #FFCCBC
+    rectangle "Dynamic: Heap (grows up via brk/mmap)" as VM6 #D1C4E9
+}
+
+OBJ -[#E64A19]right-> EXEC : **Linker transforms**
+
+EXEC -[#1976D2]down-> VML : **Kernel maps segments\ninto virtual memory**
+
+note bottom of EXEC
+  Key difference: the executable has
+  program headers (segments) that tell
+  the kernel how to map the file into
+  memory for execution.
+end note
+
+note bottom of OBJ
+  The .o file has section headers only.
+  It cannot be executed directly — it
+  must be linked first.
+end note
+
+@enduml

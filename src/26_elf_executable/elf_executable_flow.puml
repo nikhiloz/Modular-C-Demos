@@ -1,0 +1,88 @@
+@startuml elf_executable_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam arrowColor #444444
+
+title Kernel ELF Executable Loading Process
+
+start
+
+:User invokes execve() syscall
+with path to ELF binary;
+
+:Kernel reads first bytes of file;
+
+if (First 4 bytes == 0x7F 'E' 'L' 'F'?) then (yes)
+  :Valid ELF magic confirmed;
+else (no)
+  :Not an ELF file — try other
+  binary formats or return error;
+  stop
+endif
+
+:Parse ELF header:\n  class (32/64-bit),\n  machine type,\n  program header count,\n  program header offset;
+
+:Read program header table
+from specified offset;
+
+:Scan program headers
+to find PT_INTERP segment;
+
+if (PT_INTERP segment found?) then (yes — dynamically linked)
+  :Extract interpreter path
+  (e.g. /lib64/ld-linux-x86-64.so.2);
+else (no — statically linked)
+endif
+
+:Iterate over all program headers;
+
+repeat
+  :Read next program header;
+  if (Segment type == PT_LOAD?) then (yes)
+    :Map file region into process
+    virtual memory using mmap:\n  vaddr, memsz, file offset,\n  permissions (R/W/X);
+    if (memsz > filesz?) then (yes)
+      :Zero-fill remaining bytes
+      (covers .bss region);
+    else (no)
+    endif
+  else (skip non-LOAD segment for now)
+  endif
+repeat while (More program headers?) is (yes)
+-> no;
+
+:Set up new process stack:\n  push auxiliary vector (auxv)\n  push environment pointers (envp)\n  push argument pointers (argv)\n  push argument count (argc);
+
+if (Dynamically linked?) then (yes)
+  :Map dynamic linker (ld.so)
+  into process address space;
+  :Set instruction pointer
+  to ld.so entry point;
+
+  note right
+    ld.so will:
+    1. Process PT_DYNAMIC segment
+    2. Load shared libraries
+    3. Resolve PLT/GOT symbols
+    4. Run shared library init funcs
+    5. Jump to the real _start
+  end note
+
+  :Transfer control to ld.so;
+else (no — static)
+  :Set instruction pointer
+  to ELF entry point (_start);
+  :Transfer control directly
+  to the program;
+endif
+
+:Process begins execution
+at _start, which calls
+__libc_start_main, then main();
+
+stop
+
+@enduml

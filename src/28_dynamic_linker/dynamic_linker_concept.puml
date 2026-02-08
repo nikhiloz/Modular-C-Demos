@@ -1,0 +1,59 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam arrowColor #333333
+skinparam roundCorner 8
+skinparam shadowing false
+
+title PLT/GOT Lazy Binding Mechanism
+
+rectangle "**FIRST CALL to printf()**\n(Lazy Resolution)" as first_block #E8F4FD {
+
+  rectangle "User Code" as uc1 #DCEDC8
+  rectangle "call printf@PLT" as plt1 #FFF9C4
+  rectangle "PLT stub:\njmp *GOT[printf_entry]" as pltstub1 #FFF9C4
+  rectangle "GOT[printf_entry]\n(initially points back to PLT)" as got1 #FFCDD2
+  rectangle "PLT fallback:\npush relocation index" as pltfb #FFF9C4
+  rectangle "jump to _dl_runtime_resolve" as dlresolve #CE93D8
+  rectangle "Resolve actual printf address\nin libc.so" as resolve #CE93D8
+  rectangle "Patch GOT[printf_entry]\nwith real address" as patch #CE93D8
+  rectangle "Jump to real printf()" as real1 #A5D6A7
+
+  uc1 -down-> plt1
+  plt1 -down-> pltstub1
+  pltstub1 -down-> got1 : GOT has\nno real addr yet
+  got1 -down-> pltfb : bounces back\nto PLT
+  pltfb -down-> dlresolve
+  dlresolve -down-> resolve
+  resolve -down-> patch : write real\naddress to GOT
+  patch -down-> real1
+}
+
+rectangle "**SECOND CALL to printf()**\n(Fast Path)" as second_block #E8F8E8 {
+
+  rectangle "User Code" as uc2 #DCEDC8
+  rectangle "call printf@PLT" as plt2 #FFF9C4
+  rectangle "PLT stub:\njmp *GOT[printf_entry]" as pltstub2 #FFF9C4
+  rectangle "GOT[printf_entry]\n(now contains real address)" as got2 #A5D6A7
+  rectangle "Directly reaches printf()\nin libc.so" as real2 #A5D6A7
+
+  uc2 -down-> plt2
+  plt2 -down-> pltstub2
+  pltstub2 -down-> got2 : GOT patched
+  got2 -down-> real2 : direct jump\n(no resolver)
+}
+
+first_block -right-> second_block : GOT is now\npatched
+
+note bottom of first_block
+  First call is slower: must resolve
+  the symbol via _dl_runtime_resolve
+end note
+
+note bottom of second_block
+  Subsequent calls are fast:
+  GOT holds the real address
+end note
+
+@enduml

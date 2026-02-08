@@ -1,0 +1,74 @@
+@startuml cross_compilation_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam componentStyle rectangle
+skinparam packageStyle frame
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam ArrowColor #444444
+skinparam packageBorderColor #888888
+
+title Cross-Compilation Concept Overview
+
+package "Host Machine (x86-64 PC)" as HOST {
+    component "Source Code\n(hello.c)" as SRC #E8F5E9
+    component "Cross-Compiler\naarch64-linux-gnu-gcc" as CC #BBDEFB
+    component "Cross-Assembler\naarch64-linux-gnu-as" as AS #BBDEFB
+    component "Cross-Linker\naarch64-linux-gnu-ld" as LD #BBDEFB
+
+    package "Sysroot (/usr/aarch64-linux-gnu)" as SYSROOT {
+        component "Target Headers\n(stdio.h, stdlib.h)" as HDR #FFF9C4
+        component "Target Libraries\n(libc.so, libm.so)" as LIB #FFF9C4
+    }
+
+    component "ARM64 ELF Binary\n(hello)" as BIN #FFCCBC
+}
+
+package "Target Machine (Raspberry Pi / Embedded Board)" as TARGET {
+    component "ARM64 Processor\n(AArch64)" as CPU #E1BEE7
+    component "Linux Kernel\n(aarch64)" as KERN #E1BEE7
+    component "Running Binary\n./hello" as RUN #C8E6C9
+}
+
+package "Alternative: QEMU Emulation on Host" as QEMU_PKG {
+    component "qemu-aarch64-static\n(User-mode emulation)" as QEMU #FFE0B2
+}
+
+SRC -down-> CC : preprocessed
+CC -down-> AS : assembly (.s)
+AS -down-> LD : object (.o)
+HDR -right-> CC : include path
+LIB -right-> LD : link path
+LD -down-> BIN : linked ELF
+
+BIN -down-> CPU : scp to target
+CPU -right-> KERN
+KERN -right-> RUN : executes
+
+BIN -down-> QEMU : test locally
+
+note bottom of CC
+  **Toolchain Triplet Format:**
+  arch-vendor-os-abi
+  Example: aarch64-linux-gnu
+  ----
+  arch = aarch64 (ARM 64-bit)
+  vendor = (none/linux)
+  os = linux (GNU/Linux)
+  abi = gnu (glibc ABI)
+end note
+
+note bottom of SYSROOT
+  The sysroot provides target-specific
+  headers and libraries so the cross-compiler
+  can resolve includes and link against
+  the correct architecture libraries.
+end note
+
+note bottom of QEMU
+  QEMU user-mode emulation allows
+  testing ARM64 binaries on x86-64
+  without real target hardware.
+end note
+
+@enduml

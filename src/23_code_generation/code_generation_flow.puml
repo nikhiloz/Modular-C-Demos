@@ -1,0 +1,64 @@
+@startuml code_generation_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam arrowColor #444444
+
+title Code Generation: IR to Assembly
+
+start
+
+:Load IR instruction list;
+
+repeat
+
+  :Select next IR instruction;
+
+  :Match IR opcode to x86-64
+  instruction template;
+
+  note right
+    e.g. IR_ADD -> "add"
+    IR_MUL -> "imul"
+    IR_CALL -> "call"
+  end note
+
+  :Perform register allocation
+  using graph colouring;
+
+  if (All variables fit in registers?) then (yes)
+    :Map IR temporaries
+    to physical registers;
+  else (no)
+    :Spill excess variables
+    to stack slots;
+    :Insert load/store
+    instructions for spills;
+  endif
+
+  :Append translated instruction
+  to output buffer;
+
+repeat while (More IR instructions remaining?) is (yes)
+-> no;
+
+:Emit function prologue\n  push rbp\n  mov rbp, rsp\n  sub rsp, <frame_size>;
+
+:Emit translated body
+instructions in order;
+
+:Emit function epilogue\n  mov rsp, rbp\n  pop rbp\n  ret;
+
+:Write output to .s assembly file;
+
+stop
+
+note right
+  Output is a text file containing
+  AT&T or Intel syntax x86-64
+  assembly, ready for the assembler.
+end note
+
+@enduml

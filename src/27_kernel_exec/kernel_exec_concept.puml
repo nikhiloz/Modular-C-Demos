@@ -1,0 +1,81 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #333333
+skinparam sequenceLifeLineBorderColor #666666
+skinparam sequenceMessageAlign center
+skinparam roundCorner 8
+skinparam shadowing false
+
+title What Happens When You Type ./program
+
+participant "Shell\n(bash)" as shell #LightBlue
+participant "Kernel" as kernel #LightCoral
+participant "Child\nProcess" as child #LightGreen
+participant "Dynamic Linker\n(ld.so)" as ldso #LightYellow
+participant "User\nProgram" as prog #Wheat
+
+== Phase 1: Process Creation ==
+
+shell -> kernel : fork()
+activate kernel
+kernel --> shell : return child PID to parent
+kernel -> child ** : Create child process (COW copy)
+deactivate kernel
+activate child
+
+== Phase 2: Execute Binary ==
+
+child -> kernel : execve("./program", argv, envp)
+activate kernel
+
+note right of kernel
+  1. Check file permissions (x bit)
+  2. Read first 128 bytes
+  3. Verify ELF magic: 0x7f 'E' 'L' 'F'
+end note
+
+kernel -> kernel : Parse ELF program headers
+
+note right of kernel
+  4. Flush old address space
+  5. Map PT_LOAD segments into memory
+  6. Set up initial stack (argc, argv, envp, auxv)
+  7. Find .interp section (path to ld.so)
+end note
+
+== Phase 3: Dynamic Linking ==
+
+kernel -> ldso : Transfer control to ld.so entry point
+deactivate kernel
+activate ldso
+
+ldso -> ldso : Walk DT_NEEDED entries
+ldso -> ldso : Load shared libraries (.so files)
+ldso -> ldso : Perform relocations (GOT/PLT setup)
+
+note right of ldso
+  Resolve symbol references
+  Apply RELRO protections
+  Run library .init_array constructors
+end note
+
+== Phase 4: Program Start ==
+
+ldso -> prog : Jump to _start (ELF entry point)
+deactivate ldso
+activate prog
+
+prog -> prog : _start calls __libc_start_main
+prog -> prog : libc init, then call main()
+
+note right of prog
+  main(argc, argv, envp) begins
+  Your code finally runs here
+end note
+
+deactivate prog
+deactivate child
+
+@enduml

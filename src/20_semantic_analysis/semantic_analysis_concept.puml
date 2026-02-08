@@ -1,0 +1,58 @@
+@startuml semantic_analysis_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam packageBorderColor #333333
+skinparam shadowing false
+skinparam componentBackgroundColor #E8F4FD
+skinparam componentBorderColor #333333
+skinparam noteBorderColor #666666
+skinparam noteBackgroundColor #FFFDE7
+
+title Symbol Table with Nested Scopes & Type Checking
+
+package "Global Scope" as global #E8EAF6 {
+  component "function **main**\nreturn type: int" as fn_main
+  component "function **helper**\nreturn type: void" as fn_helper
+}
+
+package "Local Scope (main body)" as local_main #C8E6C9 {
+  component "variable **x**\ntype: int" as var_x
+  component "variable **y**\ntype: float" as var_y
+  component "variable **z**\ntype: int" as var_z
+}
+
+package "Block Scope (if-block inside main)" as block_if #FFF9C4 {
+  component "variable **temp**\ntype: int" as var_temp
+}
+
+global <-- local_main : parent scope
+local_main <-- block_if : parent scope
+
+note bottom of global
+  Scope lookup goes from
+  inner to outer (block -> local -> global)
+end note
+
+legend right
+  **Scope Stack Operations**
+  ----
+  Enter block  -> push new scope
+  Exit block   -> pop current scope
+  ====
+  **Type Checking Rules**
+  ----
+  int   + int   -> int
+  int   + float -> float (implicit promotion)
+  float + float -> float
+  int   * int   -> int
+  int   * float -> float (implicit promotion)
+  ====
+  **Errors Detected**
+  ----
+  - Undeclared variable usage
+  - Duplicate declaration in same scope
+  - Type mismatch in assignments
+  - Incompatible operand types
+end legend
+
+@enduml

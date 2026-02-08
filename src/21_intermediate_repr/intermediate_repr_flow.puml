@@ -1,0 +1,48 @@
+@startuml intermediate_repr_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityDiamondBorderColor #333333
+skinparam shadowing false
+
+title TAC Generation & SSA Conversion — Code Flow
+
+start
+
+partition "TAC Generation from: a = b * c + d" {
+  :Receive AST for assignment **a = b * c + d**;
+  :Walk AST in post-order traversal;
+
+  :Visit MULT node (b, c)\n=> Emit: **t1 = b * c**\n=> Allocate temporary t1;
+
+  :Visit ADD node (t1, d)\n=> Emit: **t2 = t1 + d**\n=> Allocate temporary t2;
+
+  :Visit ASSIGN node (a, t2)\n=> Emit: **a = t2**;
+
+  :TAC generation complete\n---\nResult:\n  t1 = b * c\n  t2 = t1 + d\n  a  = t2;
+}
+
+partition "SSA Conversion" {
+  :Build Control Flow Graph (CFG) from TAC;
+  :Compute dominance frontiers for each basic block;
+
+  :Identify variables that need versioning;
+  :Add version numbers to all variable definitions\n  b -> b_1, c -> c_1, d -> d_1\n  t1 -> t1_1, t2 -> t2_1, a -> a_2;
+
+  if (CFG has merge points where\nmultiple paths converge?) then (yes)
+    :Insert phi-functions at merge points\n  e.g. x_3 = phi(x_1, x_2);
+    :Rename variables through phi-functions;
+  else (no)
+    :No phi nodes needed for straight-line code;
+  endif
+
+  :Final SSA form:\n  t1_1 = b_1 * c_1\n  t2_1 = t1_1 + d_1\n  a_2  = t2_1;
+}
+
+:Output completed IR in SSA form;
+
+stop
+
+@enduml

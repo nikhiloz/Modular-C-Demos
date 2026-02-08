@@ -1,0 +1,62 @@
+@startuml parsing_ast_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam activityDiamondBorderColor #333333
+skinparam shadowing false
+
+title Recursive Descent Parsing — Code Flow
+
+start
+
+:Call **parse_expression()**;
+
+partition "parse_expression()" {
+  :Call **parse_term()** for left operand;
+  while (Current token is '+' or '-' ?) is (yes)
+    :Consume operator token;
+    :Call **parse_term()** for right operand;
+    :Create BIN_OP node (op, left, right);
+    :New node becomes left for next iteration;
+  endwhile (no)
+  :Return expression node;
+}
+
+partition "parse_term()" {
+  :Call **parse_factor()** for left operand;
+  while (Current token is '*' or '/' ?) is (yes)
+    :Consume operator token;
+    :Call **parse_factor()** for right operand;
+    :Create BIN_OP node (op, left, right);
+    :New node becomes left for next iteration;
+  endwhile (no)
+  :Return term node;
+}
+
+partition "parse_factor()" {
+  if (Current token is a NUMBER ?) then (yes)
+    :Create NUM node with token value;
+    :Consume NUMBER token;
+  elseif (Current token is open paren '(' ?) then (yes)
+    :Consume '(' token;
+    :Recurse into **parse_expression()**;
+    if (Current token is closing paren ?) then (yes)
+      :Consume the closing paren token;
+    else (no)
+      :Report syntax error — expected closing paren;
+      stop
+    endif
+  else (neither)
+    :Report syntax error — unexpected token;
+    stop
+  endif
+  :Return factor node;
+}
+
+:Return final AST root;
+
+stop
+
+@enduml

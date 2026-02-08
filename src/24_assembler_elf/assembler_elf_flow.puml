@@ -1,0 +1,95 @@
+@startuml assembler_elf_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityDiamondBackgroundColor #FFF9C4
+skinparam arrowColor #444444
+
+title Assembler Processing: .s to .o
+
+start
+
+:Initialize empty section table,
+symbol table, and string table;
+
+:Set current section to .text;
+
+repeat
+
+  :Read next assembly line;
+
+  if (Is it a directive?) then (yes)
+
+    if (Directive type?) then (.section)
+      :Switch current section
+      (create if new);
+    else (.global / .local)
+      :Update symbol binding
+      in symbol table;
+    endif
+
+    if (Directive type?) then (.data / .byte / .long)
+      :Emit data bytes into
+      current data section;
+    else (.align / .skip)
+      :Insert padding bytes
+      for alignment;
+    endif
+
+  else (no — instruction)
+
+    if (Has label prefix?) then (yes)
+      :Record label in symbol table
+      with current section and offset;
+    else (no)
+    endif
+
+    :Parse mnemonic and operands;
+
+    :Look up opcode encoding
+    from instruction table;
+
+    :Encode instruction bytes
+    (opcode + ModR/M + SIB + displacement + immediate);
+
+    if (References an unresolved symbol?) then (yes)
+      :Create relocation entry
+      recording offset, type, and target symbol;
+    else (no)
+    endif
+
+    :Append encoded bytes
+    to current section;
+
+  endif
+
+repeat while (More lines to process?) is (yes)
+-> no;
+
+:Finalize symbol table with
+all labels and their offsets;
+
+:Build section header table
+for all sections;
+
+:Write ELF header
+(magic, type=ET_REL, machine, section header offset);
+
+:Write all section contents
+(.text, .data, .bss, .rodata, etc.);
+
+:Write relocation sections
+(.rel.text, .rel.data);
+
+:Write symbol table (.symtab)
+and string table (.strtab);
+
+:Write section header table
+at end of file;
+
+:Output the .o object file;
+
+stop
+
+@enduml

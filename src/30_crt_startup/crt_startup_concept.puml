@@ -1,0 +1,68 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam arrowColor #333333
+skinparam roundCorner 8
+skinparam shadowing false
+
+title CRT Startup and Shutdown Execution Chain
+
+rectangle "**Kernel**\nexecve() completed\nstack prepared with\nargc, argv, envp, auxv" as kern #FFCDD2
+
+rectangle "**_start**\n(from crt1.o)\nEntry point of ELF\nASM: aligns stack,\npushes argc/argv" as crt_start #BBDEFB
+
+rectangle "**__libc_start_main**\n(from libc.so)\nMain libc initializer\nSets up TLS, stack guard,\nstdio, errno" as libc_main #B2DFDB
+
+rectangle "**__libc_csu_init**\n(from crt1.o / libc)\nRuns constructors" as csu_init #C8E6C9
+
+rectangle "**.init_array functions**\nGlobal constructors\n__attribute__((constructor))\nRun in order" as init_arr #DCEDC8
+
+rectangle "**main(argc, argv, envp)**\n--- Your code runs here ---" as main_fn #FFF9C4
+
+rectangle "**exit(status)**\n(from libc.so)\nNormal termination path" as exit_fn #FFE0B2
+
+rectangle "**.fini_array functions**\nGlobal destructors\n__attribute__((destructor))\nRun in reverse order" as fini_arr #FFCCBC
+
+rectangle "**atexit() handlers**\nRegistered callbacks\nRun in LIFO order" as atexit_fn #FFCCBC
+
+rectangle "**_exit(status)**\n(from libc.so)\nsyscall: exit_group()" as raw_exit #EF9A9A
+
+rectangle "**Kernel**\nClose file descriptors\nFree memory mappings\nSignal parent (SIGCHLD)\nStore exit status" as kern_exit #FFCDD2
+
+kern -down-> crt_start
+crt_start -down-> libc_main
+libc_main -down-> csu_init
+csu_init -down-> init_arr
+init_arr -down-> main_fn
+main_fn -down-> exit_fn
+exit_fn -down-> fini_arr
+fini_arr -down-> atexit_fn
+atexit_fn -down-> raw_exit
+raw_exit -down-> kern_exit
+
+note right of crt_start
+  **CRT Object Files and Their Roles:**
+
+  **crt1.o** - Contains _start symbol
+  (program entry point, calls __libc_start_main)
+
+  **crti.o** - Provides .init and .fini
+  section prologues (function headers)
+
+  **crtbegin.o** - GCC internal: registers
+  EH frames, runs C++ global ctors
+
+  **crtend.o** - GCC internal: terminates
+  EH frame list, marks ctor/dtor end
+
+  **crtn.o** - Provides .init and .fini
+  section epilogues (function footers)
+
+  **Link order:**
+  crt1.o crti.o crtbegin.o
+  ... your .o files ...
+  crtend.o crtn.o -lc
+end note
+
+@enduml

@@ -1,0 +1,57 @@
+@startuml optimisation_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam shadowing false
+skinparam noteBorderColor #666666
+skinparam noteBackgroundColor #FFFDE7
+
+title Compiler Optimisation Categories & GCC -O Levels
+
+rectangle "**Local Optimisations**\n(within a basic block)" as local #BBDEFB {
+  rectangle "Constant Folding\n  x = 3 + 4  =>  x = 7" as cf #E3F2FD
+  rectangle "Strength Reduction\n  x * 2  =>  x << 1" as sr #E3F2FD
+  rectangle "Common Subexpression\nElimination (CSE)\n  t = a+b; u = a+b\n  =>  t = a+b; u = t" as cse #E3F2FD
+}
+
+rectangle "**Loop Optimisations**\n(within and across loops)" as loop #C8E6C9 {
+  rectangle "Loop-Invariant Code Motion\n(LICM) — hoist invariants\nout of the loop body" as licm #E8F5E9
+  rectangle "Loop Unrolling\n  reduce branch overhead\n  by duplicating iterations" as unroll #E8F5E9
+  rectangle "Vectorisation\n  use SIMD instructions\n  for parallel data ops" as vec #E8F5E9
+}
+
+rectangle "**Interprocedural Optimisations**\n(across function boundaries)" as inter #FFE0B2 {
+  rectangle "Function Inlining\n  replace call with body\n  to eliminate call overhead" as inl #FFF3E0
+  rectangle "Tail Call Optimisation\n  reuse current stack frame\n  for tail-position calls" as tco #FFF3E0
+}
+
+legend right
+  **GCC Optimisation Levels**
+  ====
+  **-O0** (default)
+    No optimisation, fast compile
+  ----
+  **-O1**
+    Constant folding, DCE,
+    basic CSE
+  ----
+  **-O2**
+    All of -O1 plus:
+    Strength reduction, LICM,
+    inlining (small funcs), CSE
+  ----
+  **-O3**
+    All of -O2 plus:
+    Aggressive inlining,
+    loop unrolling, vectorisation
+  ----
+  **-Os**
+    Optimise for size
+    (like -O2 minus size-increasing opts)
+  ----
+  **-Ofast**
+    All of -O3 plus:
+    fast-math, non-standard-compliant opts
+end legend
+
+@enduml

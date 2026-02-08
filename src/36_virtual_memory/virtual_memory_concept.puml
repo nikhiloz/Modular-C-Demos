@@ -1,0 +1,83 @@
+@startuml virtual_memory_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam componentStyle rectangle
+skinparam packageStyle frame
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam ArrowColor #444444
+skinparam packageBorderColor #888888
+
+title Virtual Memory Address Translation (x86-64, 4-Level Paging)
+
+package "CPU Core" as CPU_PKG {
+    component "CPU issues\nVirtual Address" as CPU #BBDEFB
+}
+
+package "Virtual Address Breakdown (48-bit)" as VA_PKG {
+    component "PML4 Index\nbits 47:39\n(9 bits)" as PML4_IDX #E1BEE7
+    component "PDPT Index\nbits 38:30\n(9 bits)" as PDPT_IDX #E1BEE7
+    component "PD Index\nbits 29:21\n(9 bits)" as PD_IDX #E1BEE7
+    component "PT Index\nbits 20:12\n(9 bits)" as PT_IDX #E1BEE7
+    component "Page Offset\nbits 11:0\n(12 bits)" as OFFSET #FFF9C4
+}
+
+package "TLB (Translation Lookaside Buffer)" as TLB_PKG #FFFFEE {
+    component "TLB Cache\n~1 cycle lookup\nVPN -> PFN mapping" as TLB #C8E6C9
+}
+
+package "Page Table Walk (slow path, ~100 cycles)" as PTW_PKG {
+    component "PML4 Table\n(CR3 register)" as PML4 #FFCCBC
+    component "PDPT\n(Page Dir Pointer)" as PDPT #FFCCBC
+    component "PD\n(Page Directory)" as PD #FFCCBC
+    component "PT\n(Page Table)" as PT #FFCCBC
+}
+
+package "Physical Memory" as PHYS_PKG {
+    component "Physical Page Frame\n(4 KB aligned)" as FRAME #C8E6C9
+    component "Physical Address\n= Frame Base + Offset" as PA #C8E6C9
+}
+
+CPU -down-> TLB : virtual address lookup
+TLB -down-> PA : **Fast path: TLB hit (~1 cycle)**
+
+CPU -down-> PML4_IDX
+PML4_IDX -right-> PDPT_IDX
+PDPT_IDX -right-> PD_IDX
+PD_IDX -right-> PT_IDX
+PT_IDX -right-> OFFSET
+
+PML4_IDX -down-> PML4 : index into
+PML4 -right-> PDPT : points to
+PDPT -right-> PD : points to
+PD -right-> PT : points to
+PT -down-> FRAME : **Slow path: 4 memory accesses**
+FRAME -right-> PA : combine with offset
+
+note bottom of TLB
+  **TLB: Fast-Path Cache**
+  Small associative cache (64-1536 entries)
+  Maps virtual page number to physical frame
+  Flushed on context switch (or uses ASID/PCID)
+  Hit rate typically > 99%
+end note
+
+note bottom of PT
+  **Page Table Entry (PTE) Bits:**
+  Bit 0: Present (P) - page in RAM
+  Bit 1: Read/Write (R/W)
+  Bit 2: User/Supervisor (U/S)
+  Bit 5: Accessed (A) - read by CPU
+  Bit 6: Dirty (D) - written by CPU
+  Bit 63: No-Execute (NX/XD)
+  Bits 12-51: Physical frame address
+end note
+
+note bottom of PA
+  Final physical address =
+  (PTE frame base address)
+  + (12-bit page offset)
+  Sent to memory controller
+end note
+
+@enduml

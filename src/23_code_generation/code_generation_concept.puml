@@ -1,0 +1,86 @@
+@startuml code_generation_concept
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam rectangleBorderColor #333333
+skinparam rectangleBackgroundColor #E8F4FD
+skinparam packageBorderColor #555555
+skinparam packageBackgroundColor #FFFDE7
+skinparam arrowColor #444444
+
+title x86-64 Register Layout & Calling Convention
+
+package "x86-64 Register File" {
+
+    rectangle "Argument Registers\n(caller passes args here)" as ARGS {
+        rectangle "rdi  — 1st arg" as R1
+        rectangle "rsi  — 2nd arg" as R2
+        rectangle "rdx  — 3rd arg" as R3
+        rectangle "rcx  — 4th arg" as R4
+        rectangle "r8   — 5th arg" as R5
+        rectangle "r9   — 6th arg" as R6
+    }
+
+    rectangle "Return Register" as RET #D4EDDA {
+        rectangle "rax  — return value" as RAX
+    }
+
+    rectangle "Callee-Saved Registers\n(must be preserved across calls)" as CSAVED #FFF3CD {
+        rectangle "rbx" as RBX
+        rectangle "rbp  — frame pointer" as RBP
+        rectangle "r12" as R12
+        rectangle "r13" as R13
+        rectangle "r14" as R14
+        rectangle "r15" as R15
+    }
+
+    rectangle "Caller-Saved Registers\n(may be clobbered by callee)" as CRSAVED #F8D7DA {
+        rectangle "r10" as R10
+        rectangle "r11" as R11
+        rectangle "rax, rcx, rdx, rsi, rdi, r8, r9" as CRLIST
+    }
+
+    rectangle "Special Registers" as SPECIAL #E2D9F3 {
+        rectangle "rsp  — stack pointer" as RSP
+        rectangle "rip  — instruction pointer" as RIP
+    }
+}
+
+package "System V AMD64 Calling Convention" {
+
+    rectangle "1. Caller Prepares Call" as STEP1 #E3F2FD {
+        rectangle "Place args 1-6 in rdi,rsi,rdx,rcx,r8,r9" as S1A
+        rectangle "Push surplus args (7+) onto stack right-to-left" as S1B
+        rectangle "Align stack to 16 bytes" as S1C
+        rectangle "Execute CALL instruction (pushes return addr)" as S1D
+    }
+
+    rectangle "2. Callee Prologue" as STEP2 #E8F5E9 {
+        rectangle "push rbp        ; save old frame pointer" as S2A
+        rectangle "mov rbp, rsp    ; set new frame pointer" as S2B
+        rectangle "sub rsp, N      ; allocate local space" as S2C
+        rectangle "Save callee-saved regs if used" as S2D
+    }
+
+    rectangle "3. Function Body" as STEP3 #FFF9C4 {
+        rectangle "Execute function logic" as S3A
+        rectangle "Place return value in rax" as S3B
+    }
+
+    rectangle "4. Callee Epilogue" as STEP4 #FCE4EC {
+        rectangle "Restore callee-saved regs" as S4A
+        rectangle "mov rsp, rbp    ; deallocate locals" as S4B
+        rectangle "pop rbp         ; restore old frame pointer" as S4C
+        rectangle "ret             ; pop return addr, jump back" as S4D
+    }
+}
+
+STEP1 -[#2196F3]-> STEP2
+STEP2 -[#4CAF50]-> STEP3
+STEP3 -[#FFC107]-> STEP4
+
+note bottom of STEP4
+  After RET, the caller cleans up
+  any surplus stack arguments.
+end note
+
+@enduml

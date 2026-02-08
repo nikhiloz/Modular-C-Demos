@@ -1,0 +1,60 @@
+@startuml preprocessor_deep_flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam activityBackgroundColor #E8F4FD
+skinparam activityBorderColor #2980B9
+skinparam activityDiamondBackgroundColor #FEF9E7
+skinparam activityDiamondBorderColor #E67E22
+skinparam arrowColor #2C3E50
+
+title Preprocessor Processing Flow
+
+start
+
+:Open source file and\ninitialize line reader;
+
+repeat
+
+  :Read next source line;
+
+  if (Is it a preprocessor directive?) then (yes)
+
+    if (Which directive?) then (#include)
+      :Search include paths\nfor the named file;
+      :Open and insert file contents\n(recursively preprocess it);
+
+    elseif (Which directive?) then (#define)
+      :Record macro name and\nreplacement body in table;
+
+    elseif (Which directive?) then (#undef)
+      :Remove macro from table;
+
+    elseif (Which directive?) then (#if / #ifdef / #ifndef)
+      :Evaluate condition expression;
+      if (Condition true?) then (yes)
+        :Include following block;
+      else (no)
+        :Skip lines until\n#elif / #else / #endif;
+      endif
+
+    elseif (Which directive?) then (#pragma)
+      :Process pragma\n(implementation-defined);
+
+    else (#error / #warning)
+      :Emit diagnostic message;
+    endif
+
+  else (no)
+    :Scan line for macro invocations;
+    :Expand all macros\n(handle # and ## operators);
+    :Output processed line\nto expanded source;
+  endif
+
+repeat while (More lines to process?) is (yes)
+-> no;
+
+:Write final expanded\nsource (.i file);
+
+stop
+
+@enduml
